@@ -7,14 +7,14 @@ using System.Text;
 namespace HKXPoserNG.Extensions;
 
 public static class BinaryWriterExtensions {
-    public static void Write(this BinaryWriter writer, ref Vector4 v) {
+    public static void Write(this BinaryWriter writer, Vector4 v) {
         writer.Write(v.X);
         writer.Write(v.Y);
         writer.Write(v.Z);
         writer.Write(v.W);
     }
 
-    public static void Write(this BinaryWriter writer, ref Quaternion q) {
+    public static void Write(this BinaryWriter writer, Quaternion q) {
         writer.Write(q.X);
         writer.Write(q.Y);
         writer.Write(q.Z);

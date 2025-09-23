@@ -1,6 +1,7 @@
 ﻿using Avalonia.Threading;
 using CommunityToolkit.Mvvm.Input;
 using HKXPoserNG.Extensions;
+using PropertyChanged.SourceGenerator;
 using SingletonSourceGenerator.Attributes;
 using System;
 using System.IO;
@@ -11,6 +12,12 @@ namespace HKXPoserNG.ViewModels;
 
 [Singleton]
 public partial class MainViewModel {
+    public MainViewModel() {
+         string path_animation_idle = Path.Combine(PathConstants.ResourcesDirectory, "idle.bin");
+        LoadedAnimation = new Animation();
+        LoadedAnimation.Load(path_animation_idle);
+    }
+
     public Func<Task<FileInfo?>>? OpenFileDialogFunc { get; set; }
 
     [RelayCommand]
@@ -25,14 +32,14 @@ public partial class MainViewModel {
                         throw new InvalidOperationException("The selected file is not a .hkx file. Please select a valid .hkx file.");
                     if (!fileInfo.Exists)
                         throw new FileNotFoundException("The selected file does not exist.", fileInfo.FullName);
-                    string path_copy = Path.Combine(GlobalConstants.HKXDirectory, fileInfo.Name);
-                    fileInfo.CopyTo(path_copy, true);
-                    //After combating weirld bug that hkdump cannot work, I found that the input cannot be in same directory, and also cannot somewhere too far.
+                    string path_out_hct = Path.Combine(PathConstants.TempDirectory, fileInfo.Name);
+                    ExternalPrograms.HCT(fileInfo.FullName, path_out_hct);
                     string name_no_ext = fileInfo.Name[..^4];
-                    string path_bin = Path.Combine(GlobalConstants.TempDirectory, $"{name_no_ext}.bin");
-                    ExternalPrograms.HKDump(path_copy, path_bin);
-                    OpenedAnimation = new HKAAnimation();
-                    OpenedAnimation.Load(path_bin);
+                    string path_out_hkdump = Path.Combine(PathConstants.TempDirectory, $"{name_no_ext}.bin");
+                    ExternalPrograms.HKDump(path_out_hct, path_out_hkdump);
+                    LoadedAnimation = new Animation();
+                    LoadedAnimation.Load(path_out_hkdump);
+                    OnPropertyChanged(new(nameof(LoadedAnimation)));
                 }
             );
     }
@@ -41,5 +48,8 @@ public partial class MainViewModel {
     private void Save() {
     }
 
-    public HKAAnimation? OpenedAnimation { get; private set; }
+    public Animation LoadedAnimation { get; private set; }
+
+    [Notify]
+    private int currentFrame = 0;
 }

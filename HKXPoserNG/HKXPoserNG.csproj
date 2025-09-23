@@ -3,7 +3,7 @@
 	<OutputType>WinExe</OutputType>
 	<TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
+    <LangVersion>preview</LangVersion>
 	<ApplicationManifest>app.manifest</ApplicationManifest>
 
 	<DefineConstants>$(DefineConstants);HAS_AVALONIA</DefineConstants>
@@ -20,13 +20,32 @@
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
 
 	<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+	<PackageReference Include="System.Reactive" Version="6.0.1" />
 
 	<PackageReference Include="Vortice.Direct3D11" Version="3.6.2" />
-
+	<PackageReference Include="Vortice.D3DCompiler" Version="3.6.2" />
+	<PackageReference Include="Nifly" Version="0.1.0" />
+	<PackageReference Include="Pfim" Version="0.11.3" />
+	
 	<PackageReference Include="PropertyChanged.SourceGenerator" Version="1.1.1" PrivateAssets="all" />
 	<PackageReference Include="DependencyPropertyGenerator" Version="1.5.0" PrivateAssets="all" />
 	<PackageReference Include="SingletonSourceGenerator" Version="1.0.2" />
 
+	<None Update="ExternalPrograms\*.exe">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+	<None Update="Data\**\*">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+	<None Update="Resources\*">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+	<None Update="**\*.hlsl">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+	<None Update="win32.hko">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
   </ItemGroup>
   
 </Project>

@@ -9,7 +9,7 @@ namespace HKXPoserNG.Extensions;
 
 public static class DispatcherExtensions {
     public static void WaitForTaskAndContinue<T>(this Dispatcher dispatcher, Task<T> task, Action<T> continuation) {
-        void DispatcherRecursion(){
+        void DispatcherRecursion() {
             if (task.IsCompletedSuccessfully) {
                 continuation(task.Result);
             } else if (task.IsFaulted) {

@@ -2,8 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:v="clr-namespace:HKXPoserNG.Views"
              xmlns:vm="clr-namespace:HKXPoserNG.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 IsHitTestVisible="True"
              x:Class="HKXPoserNG.Views.MainView">
   <DockPanel>
 	<Menu DockPanel.Dock="Top">
@@ -12,6 +14,8 @@
 		<MenuItem Header="Save" Command="{Binding SaveCommand}" />
 	  </MenuItem>
 	</Menu>
-	<Control></Control>
+	<v:SkeletonView DockPanel.Dock="Right" Width="200"/>
+	<v:BoneView DockPanel.Dock="Right" Width="200" VerticalAlignment="Top"/>
+	<v:D3D11View ZIndex="-1"/>
   </DockPanel>
 </UserControl>
