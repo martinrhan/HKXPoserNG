@@ -7,7 +7,7 @@ cbuffer cb : register(b0)
 // update by submesh, for VS
 cbuffer cb_submesh : register(b1)
 {
-    float4x4 palette[40];
+    float4x4 palette[49];
 }
 
 // update by mesh, for PS
@@ -23,7 +23,7 @@ cbuffer cb_mesh : register(b2)
 struct VS_IN
 {
     float3 position : POSITION;
-    float2 texcoord : TEXCOORD;
+    float3 normal : NORMAL;
     float4 weights : BLENDWEIGHT;
     uint4 indices : BLENDINDICES;
 };
@@ -31,43 +31,36 @@ struct VS_IN
 struct PS_IN
 {
     float4 position : SV_Position;
-    float2 texcoord : TEXCOORD;
+    float color : COLOR;
 };
 
-Texture2D albedoMap;
-SamplerState albedoSampler
-{
-    Filter = MIN_MAG_MIP_LINEAR;
-    AddressU = Wrap;
-    AddressV = Wrap;
-};
-
-PS_IN VS(VS_IN vs_in)
+PS_IN VS(VS_IN input)
 {
     PS_IN output;
-    float4 p = float4(vs_in.position, 1);
     float4x4 mat =
-        palette[vs_in.indices.x] * (float) vs_in.weights.x +
-		palette[vs_in.indices.y] * (float) vs_in.weights.y +
-		palette[vs_in.indices.z] * (float) vs_in.weights.z +
-		palette[vs_in.indices.w] * (float) vs_in.weights.w;
+        palette[input.indices.x] * (float) input.weights.x +
+		palette[input.indices.y] * (float) input.weights.y +
+		palette[input.indices.z] * (float) input.weights.z +
+		palette[input.indices.w] * (float) input.weights.w;
+    
+    float4 p = float4(input.position, 1);
     p = mul(mat, p);
     p = mul(wvp, p);
+    
+    float4 n_4 = float4(input.normal, 0);
+    n_4 = mul(mat, n_4);
+    n_4 = mul(wvp, n_4);
+    float3 n = n_4.xyz;
+    
     output.position = p;
-    output.texcoord = vs_in.texcoord;
+    float c = (1 - n.z) * .5;
+    output.color = c;
     return output;
 }
 
 
-float4 PS(PS_IN ps_in) : SV_Target
+float4 PS(PS_IN input) : SV_Target
 {
-    bool model_space_normals = SLSF1 & (1 << 12);
-
-    float4 albedo = albedoMap.Sample(albedoSampler, ps_in.texcoord);
-    clip(albedo.a - 0.25); // alpha test
-
-    if (model_space_normals)
-        albedo += albedo;
-
-    return albedo;
+    float c = input.color;
+    return float4(c, c, c, 1);
 }

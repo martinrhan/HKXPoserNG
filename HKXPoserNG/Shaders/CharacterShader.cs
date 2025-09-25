@@ -14,7 +14,7 @@ public partial class CharacterShader : Shader {
         var bytecode_vs = Compiler.CompileFromFile(HlslPath, "VS", "vs_5_0");
         InputElementDescription[] elements = [
                 new ("POSITION", 0, Format.R32G32B32_Float, 0, 0),
-                new ("TEXCOORD", 0, Format.R32G32_Float, 0, 1),
+                new ("NORMAL", 0, Format.R32G32B32_Float, 0, 1),
                 new ("BLENDWEIGHT", 0, Format.R32G32B32A32_Float, 0, 2),
                 new ("BLENDINDICES", 0, Format.R8G8B8A8_UInt, 0, 3)
             ];

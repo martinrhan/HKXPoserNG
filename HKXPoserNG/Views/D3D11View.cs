@@ -43,7 +43,7 @@ public class D3D11View : D3D11Control {
                 CpuAccessFlags.Write
             );
         cb_boneMatrices = DXObjects.D3D11Device.CreateBuffer(
-                (uint)(40 * Marshal.SizeOf<Matrix4x4>()),
+                (uint)(49 * Marshal.SizeOf<Matrix4x4>()),
                 BindFlags.ConstantBuffer,
                 ResourceUsage.Dynamic,
                 CpuAccessFlags.Write
@@ -128,7 +128,7 @@ public class D3D11View : D3D11Control {
         DispatcherRecursion(Task.CompletedTask);
     }
 
-    private Matrix4x4[] array_boneMatrices = new Matrix4x4[40];
+    private Matrix4x4[] array_boneMatrices = new Matrix4x4[49];
     private uint[] array_shaderFlags = new uint[2];
 
     bool needRedraw = true;
@@ -153,7 +153,8 @@ public class D3D11View : D3D11Control {
                 array_shaderFlags[0] = (uint)mesh.SLSF1;
                 array_shaderFlags[1] = (uint)mesh.SLSF2;
                 context.WriteBuffer(cb_shaderFlags, array_shaderFlags);
-                context.PSSetShaderResource(0, mesh.Texture.D3DShaderResourceView);
+                if (mesh.Texture != null)
+                    context.PSSetShaderResource(0, mesh.Texture.D3DShaderResourceView);
                 foreach (var partition in mesh.PartitionMeshes) {
                     Pose currentPose = MainViewModel.Instance.LoadedAnimation.Poses[MainViewModel.Instance.CurrentFrame];
                     for (int i = 0; i < partition.BoneMap.Count; i++) {
@@ -165,7 +166,7 @@ public class D3D11View : D3D11Control {
                     }
                     context.WriteBuffer(cb_boneMatrices, array_boneMatrices);
                     context.IASetVertexBuffer(0, mesh.VertexBuffer, (uint)Marshal.SizeOf<Vector3>());
-                    context.IASetVertexBuffer(1, mesh.UVBuffer, (uint)Marshal.SizeOf<Vector2>());
+                    context.IASetVertexBuffer(1, mesh.NormalBuffer, (uint)Marshal.SizeOf<Vector3>());
                     context.IASetVertexBuffer(2, mesh.WeightBuffer, (uint)Marshal.SizeOf<Vector4>());
                     context.IASetVertexBuffer(3, mesh.BoneIndexBuffer, 4);
                     context.IASetIndexBuffer(partition.TriangleIndexBuffer, Format.R16_UInt, 0);

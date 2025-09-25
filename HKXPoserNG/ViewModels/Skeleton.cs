@@ -19,8 +19,8 @@ namespace HKXPoserNG.ViewModels;
 public partial class Skeleton {
     public Skeleton() {
         NifFile nifFile = new NifFile();
-        nifFile.Load(Path.Combine(PathConstants.DataDirectory, "skeleton.nif"));
-        NiNode[] nodes = nifFile.Blocks.OfType<NiNode>().ToArray();
+        nifFile.Load(Path.Combine(PathConstants.DataDirectory, "skeleton_female.nif"));
+        NiNode[] nodes = nifFile.Blocks.OfType<NiNode>().Skip(1).ToArray();
         bones = new Bone[nodes.Length];
         for (int i = 0; i < nodes.Length; i++) {
             NiNode node = nodes[i];
@@ -29,8 +29,6 @@ public partial class Skeleton {
                 Name = node.Name.String,
                 LocalTransform = new Transform(node.Translation, node.Rotation, node.Scale)
             };
-            if (bones == null)
-                bones = new Bone[nodes.Length];
             bones[i] = bone;
             dictionary[bone.Name] = bone;
         }
@@ -87,3 +85,4 @@ public partial class Skeleton {
     [Notify]
     private Bone? selectedBone;
 }
+

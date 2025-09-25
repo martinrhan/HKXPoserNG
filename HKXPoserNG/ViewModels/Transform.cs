@@ -1,10 +1,11 @@
 using HKXPoserNG.Extensions;
 using NiflySharp.Structs;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Numerics;
 
-public struct Transform {
+public struct Transform : IEquatable<Transform> {
     public static Transform Identity { get; } = new Transform(Vector3.Zero, Quaternion.Identity, 1);
 
     public float Scale { get; }
@@ -20,9 +21,9 @@ public struct Transform {
         this.Rotation = rotation;
         this.Scale = scale;
         Matrix =
-            Matrix4x4.CreateTranslation(Translation) *
+            Matrix4x4.CreateScale(Scale) *
             Matrix4x4.CreateFromQuaternion(Rotation) *
-            Matrix4x4.CreateScale(Scale)
+            Matrix4x4.CreateTranslation(Translation)
             ;
     }
 
@@ -31,7 +32,7 @@ public struct Transform {
         Quaternion q = Quaternion.CreateFromRotationMatrix(rotation.ToMatrix4x4());
         Matrix4x4 m = Matrix4x4.CreateFromQuaternion(Rotation);
     }
-     
+
     public Transform(BinaryReader reader) {
         Vector4 t;
         Quaternion rotation;
@@ -64,4 +65,31 @@ public struct Transform {
         writer.Write(scale);
     }
 
+    public bool Equals(Transform other) {
+        return this.Translation == other.Translation &&
+               this.Rotation == other.Rotation &&
+               this.Scale == other.Scale;
+    }
+
+    public override bool Equals([NotNullWhen(true)] object? obj) {
+        return obj is Transform other && Equals(other);
+    }
+
+    public override int GetHashCode() {
+        return HashCode.Combine(Translation, Rotation, Scale);
+    }
+
+    public override string ToString() {
+        return $"T:{Translation} R:{Rotation} S:{Scale}";
+    }
+
+    public static bool operator ==(Transform left, Transform right) => left.Equals(right);
+    public static bool operator !=(Transform left, Transform right) => !left.Equals(right);
+
+    public static Transform operator *(Transform a, Transform b) {
+        float scale = b.Scale * a.Scale;
+        Quaternion rotation = Quaternion.Normalize(b.Rotation * a.Rotation);
+        Vector3 translation = Vector3.Transform(a.Translation * b.Scale, b.Rotation) + b.Translation;
+        return new Transform(translation, rotation, scale);
+    }
 }
