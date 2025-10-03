@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HKXPoserNG", "HKXPoserNG\HK
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HKXPoserNG.Test", "HKXPoserNG.Test\HKXPoserNG.Test.csproj", "{62ABD809-6B76-4BDD-8824-B2AEB6AF0544}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HKX2", "HKX2Library\HKX2\HKX2.csproj", "{DA3707F2-C26F-8093-00B2-C7E3908C235E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{62ABD809-6B76-4BDD-8824-B2AEB6AF0544}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62ABD809-6B76-4BDD-8824-B2AEB6AF0544}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62ABD809-6B76-4BDD-8824-B2AEB6AF0544}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA3707F2-C26F-8093-00B2-C7E3908C235E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA3707F2-C26F-8093-00B2-C7E3908C235E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA3707F2-C26F-8093-00B2-C7E3908C235E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA3707F2-C26F-8093-00B2-C7E3908C235E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
