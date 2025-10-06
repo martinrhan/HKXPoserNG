@@ -12,6 +12,7 @@ namespace HKXPoserNG.Extensions;
 public static class MathExtensions {
 
     public static float Square(this float x) => x * x;
+
 }
 
 public static class NumericsExtensions {
@@ -55,5 +56,13 @@ public static class NumericsExtensions {
             MathF.Abs(mat1.M42 - mat2.M42) < tolerance &&
             MathF.Abs(mat1.M43 - mat2.M43) < tolerance &&
             MathF.Abs(mat1.M44 - mat2.M44) < tolerance;
+    }
+}
+
+public static class IReadOnlyListExtensions {
+    public static T GetOrDefault<T>(this IReadOnlyList<T> list, int index, T defaultValue = default!) {
+        if (index < 0 || index >= list.Count)
+            return defaultValue;
+        return list[index];
     }
 }

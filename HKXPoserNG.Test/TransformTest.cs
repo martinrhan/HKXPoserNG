@@ -32,4 +32,20 @@ public sealed class TransformTest {
 
         Assert.IsTrue(NumericsExtensions.AreApproximatelyEqual(m_product, tf_product.Matrix));
     }
+
+    [TestMethod]
+    public void TestInverse() {
+        Vector3 tl = new Vector3(1, 2, 3);
+        Matrix4x4 r = Matrix4x4.CreateFromYawPitchRoll(0.1f, 0.2f, 0.3f);
+        float s = 1.5f;
+        Transform tf = new Transform(tl, Quaternion.CreateFromRotationMatrix(r), s);
+        Transform tf_inv = tf.Inverse();
+        Matrix4x4 m =
+            Matrix4x4.CreateScale(s) *
+            r *
+            Matrix4x4.CreateTranslation(tl);
+        Matrix4x4 m_inv;
+        Matrix4x4.Invert(m, out m_inv);
+        Assert.IsTrue(NumericsExtensions.AreApproximatelyEqual(m_inv, tf_inv.Matrix));
+    }
 }

@@ -7,15 +7,23 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 IsHitTestVisible="True"
              x:Class="HKXPoserNG.Views.MainView">
-  <DockPanel>
-	<Menu DockPanel.Dock="Top">
-	  <MenuItem Header="File">
-		<MenuItem Header="Open" Command="{Binding OpenCommand}" />
-		<MenuItem Header="Save" Command="{Binding SaveCommand}" />
-	  </MenuItem>
-	</Menu>
-	<v:SkeletonView DockPanel.Dock="Right" Width="200"/>
-	<v:BoneView DockPanel.Dock="Right" Width="200" VerticalAlignment="Top"/>
-	<v:D3D11View ZIndex="-1"/>
-  </DockPanel>
+  <Panel>
+	<DockPanel>
+	  <Menu DockPanel.Dock="Top">
+		<MenuItem Header="File">
+		  <MenuItem Header="Open" Command="{Binding OpenCommand}" />
+		  <MenuItem Header="Save" Command="{Binding SaveCommand}" />
+		</MenuItem>
+		<MenuItem Header="Operations">
+		  <MenuItem Header="Move Focus Point To">
+			<MenuItem Header="Selected Bone"/>
+		  </MenuItem>
+		</MenuItem>
+	  </Menu>
+	  <v:SkeletonView DockPanel.Dock="Right" Width="200"/>
+	  <v:BoneView DockPanel.Dock="Right" Width="200" VerticalAlignment="Top"/>
+	  <v:AnimationView DockPanel.Dock="Bottom" Height="100"/>
+	  <v:D3D11View ZIndex="-1"/>
+	</DockPanel>
+  </Panel>
 </UserControl>

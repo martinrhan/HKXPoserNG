@@ -6,8 +6,11 @@
              x:Class="HKXPoserNG.Views.SkeletonView">
   <TreeView ItemsSource="{Binding Root}" SelectedItem="{Binding SelectedBone}">
 	<TreeView.ItemTemplate>
-	  <TreeDataTemplate ItemsSource="{Binding Children}"> 
-		<TextBlock Text="{Binding Name}" />
+	  <TreeDataTemplate ItemsSource="{Binding Children}">
+		<StackPanel Orientation="Horizontal">
+		  <TextBlock Text="{Binding Index}" />
+		  <TextBlock Text="{Binding Name}" Margin="10,0"/>
+		</StackPanel>
 	  </TreeDataTemplate>
 	</TreeView.ItemTemplate>
   </TreeView>

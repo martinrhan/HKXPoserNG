@@ -30,9 +30,9 @@ public partial class BodyModel {
             return nifFile;
         }
 
-        NifFile nifFile_femalebody = LoadNifFile("femalebody_0.nif");
-        NifFile nifFile_femalefeet = LoadNifFile("femalefeet_0.nif");
-        NifFile nifFile_femalehands = LoadNifFile("femalehands_0.nif");
+        NifFile nifFile_femalebody = LoadNifFile("femalebody_1.nif");
+        NifFile nifFile_femalefeet = LoadNifFile("femalefeet_1.nif");
+        NifFile nifFile_femalehands = LoadNifFile("femalehands_1.nif");
         NifFile nifFile_femalehead = LoadNifFile("femalehead.nif");
 
         meshes = meshList.ToArray();
@@ -98,6 +98,11 @@ public class Mesh {
         WeightBuffer = device.CreateBuffer(weights, BindFlags.VertexBuffer, ResourceUsage.Immutable);
         BoneIndexBuffer = device.CreateBuffer(boneIndices, BindFlags.VertexBuffer, ResourceUsage.Immutable);
 
+        NiNode[] boneBlocks = BSDismemberSkinInstance.Bones.GetBlocks(nifFile).ToArray();
+        IEnumerable<string> boneNames = boneBlocks.Select(b => b.Name.String);
+        boneMap = boneNames.Select(name => Skeleton.Instance.BoneDictionary[name].Index).ToArray();
+        boneInverseTransforms = boneBlocks.Select(b => new Transform(b.Translation, b.Rotation, b.Scale).Inverse()).ToArray();
+
         partitionMeshes = new PartitionMesh[NiSkinPartition.Partitions.Count];
         partitionMeshes.Populate(i => new(this, i));
 
@@ -119,23 +124,6 @@ public class Mesh {
         NormalBuffer = device.CreateBuffer(normals, BindFlags.VertexBuffer, ResourceUsage.Immutable);
 
         //Texture = Texture.GetOrCreate(BSShaderTextureSet.Textures[0].Content);
-
-        IEnumerable<string> boneNames = BSDismemberSkinInstance.Bones.GetBlocks(nifFile).Select(b => b.Name.String);
-        boneMap = boneNames.Select(name => Skeleton.Instance.Dictionary[name].Index).ToArray();
-
-        boneLocals = BSDismemberSkinInstance.Bones.GetBlocks(nifFile).Select(n => new Transform(n.Translation, n.Rotation, n.Scale)).ToArray();
-
-        for (int i = 0; i < boneLocals.Length; i++) {
-            Transform boneLocal = boneLocals[i];
-            int boneIndex = boneMap[i];
-            Transform boneLocal1 = Skeleton.Instance.Bones[boneIndex].LocalTransform;
-            if (boneLocal != boneLocal1) {
-                Debug.WriteLine($"Bone local transform mismatch {i}");
-                Debug.WriteLine(boneLocal);
-                Debug.WriteLine(boneLocal1);
-                //Skeleton.Instance.Bones[boneIndex].LocalTransform *= boneLocal;
-            }
-        }
     }
     public BSTriShape BSTriShape { get; }
     public BSDismemberSkinInstance BSDismemberSkinInstance { get; }
@@ -158,8 +146,8 @@ public class Mesh {
     private int[] boneMap;
     public IReadOnlyList<int> BoneMap => boneMap;
 
-    private Transform[] boneLocals;
-    public IReadOnlyList<Transform> BoneLocals => boneLocals;
+    private Transform[] boneInverseTransforms;
+    public IReadOnlyList<Transform> BoneInverseTransforms => boneInverseTransforms;
 
     public BSShaderFlags SLSF1 => BSLightingShaderProperty.ShaderFlags;
     public BSShaderFlags2 SLSF2 => BSLightingShaderProperty.ShaderFlags2;

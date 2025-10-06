@@ -5,14 +5,16 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Numerics;
 
-public struct Transform : IEquatable<Transform> {
+public readonly struct Transform : IEquatable<Transform> {
     public static Transform Identity { get; } = new Transform(Vector3.Zero, Quaternion.Identity, 1);
 
     public float Scale { get; }
     public Quaternion Rotation { get; }
     public Vector3 Translation { get; }
 
-    public Matrix4x4 Matrix { get; private set; }
+    public Matrix4x4 Matrix =>
+        Matrix4x4.CreateScale(Scale) * Matrix4x4.CreateFromQuaternion(Rotation) * Matrix4x4.CreateTranslation(Translation);
+
 
     public Transform() : this(Vector3.Zero, Quaternion.Identity, 1) { }
 
@@ -20,11 +22,6 @@ public struct Transform : IEquatable<Transform> {
         this.Translation = translation;
         this.Rotation = rotation;
         this.Scale = scale;
-        Matrix =
-            Matrix4x4.CreateScale(Scale) *
-            Matrix4x4.CreateFromQuaternion(Rotation) *
-            Matrix4x4.CreateTranslation(Translation)
-            ;
     }
 
     public Transform(Vector3 translation, Matrix33 rotation, float scale) :
@@ -45,10 +42,6 @@ public struct Transform : IEquatable<Transform> {
         this.Translation = new Vector3(t.X, t.Y, t.Z);
         this.Rotation = rotation;
         this.Scale = scale.Z;
-        Matrix =
-            Matrix4x4.CreateScale(Scale) *
-            Matrix4x4.CreateFromQuaternion(Rotation) *
-            Matrix4x4.CreateTranslation(Translation);
     }
 
     public void Dump() {
@@ -91,5 +84,12 @@ public struct Transform : IEquatable<Transform> {
         Quaternion rotation = Quaternion.Normalize(b.Rotation * a.Rotation);
         Vector3 translation = Vector3.Transform(a.Translation * b.Scale, b.Rotation) + b.Translation;
         return new Transform(translation, rotation, scale);
+    }
+
+    public Transform Inverse() {
+        float invScale = 1.0f / Scale;
+        Quaternion invRotation = Quaternion.Conjugate(Rotation);
+        Vector3 invTranslation = Vector3.Transform(-Translation * invScale, invRotation);
+        return new Transform(invTranslation, invRotation, invScale);
     }
 }

@@ -16,7 +16,6 @@ public static class PathConstants {
 
     public readonly static string AppDirectory = AppContext.BaseDirectory;
     public readonly static string TempDirectory = Path.Combine(AppDirectory, "Temp");
-    public readonly static string ResourcesDirectory = Path.Combine(AppDirectory, "Resources");
     public readonly static string DataDirectory = Path.Combine(AppDirectory, "Data");
     public readonly static string HKDumpExecutablePath = Path.Combine(AppDirectory, "ExternalPrograms", "hkdump-bin.exe");
     public readonly static string HCTExecutablePath = Path.Combine(AppDirectory, "ExternalPrograms", "hct.exe");

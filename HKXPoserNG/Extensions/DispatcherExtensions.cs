@@ -17,7 +17,7 @@ public static class DispatcherExtensions {
             } else if (task.IsCanceled) {
                 return;
             } else {
-                dispatcher.InvokeAsync(DispatcherRecursion, DispatcherPriority.ApplicationIdle);
+                dispatcher.InvokeAsync(DispatcherRecursion, DispatcherPriority.Background);
             }
         }
         DispatcherRecursion();

@@ -7,7 +7,7 @@ cbuffer cb : register(b0)
 // update by submesh, for VS
 cbuffer cb_submesh : register(b1)
 {
-    float4x4 palette[49];
+    float4x4 palette[40];
 }
 
 // update by mesh, for PS

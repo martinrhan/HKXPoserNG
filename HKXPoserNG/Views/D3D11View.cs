@@ -8,6 +8,7 @@ using HKXPoserNG.Shaders;
 using HKXPoserNG.ViewModels;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -30,6 +31,11 @@ public class D3D11View : D3D11Control {
                 needRedraw = true;
             }
         };
+        Animation.Instance.PropertyChanged += (_, e) => {
+            if (e.PropertyName == nameof(Animation.CurrentFrame)) {
+                needRedraw = true;
+            }
+        };
 
         cb0_data.rtwidth = width;
         cb0_data.rtheight = height;
@@ -43,7 +49,7 @@ public class D3D11View : D3D11Control {
                 CpuAccessFlags.Write
             );
         cb_boneMatrices = DXObjects.D3D11Device.CreateBuffer(
-                (uint)(49 * Marshal.SizeOf<Matrix4x4>()),
+                (uint)(40 * Marshal.SizeOf<Matrix4x4>()),
                 BindFlags.ConstantBuffer,
                 ResourceUsage.Dynamic,
                 CpuAccessFlags.Write
@@ -128,7 +134,7 @@ public class D3D11View : D3D11Control {
         DispatcherRecursion(Task.CompletedTask);
     }
 
-    private Matrix4x4[] array_boneMatrices = new Matrix4x4[49];
+    private Matrix4x4[] array_boneMatrices = new Matrix4x4[40];
     private uint[] array_shaderFlags = new uint[2];
 
     bool needRedraw = true;
@@ -156,13 +162,12 @@ public class D3D11View : D3D11Control {
                 if (mesh.Texture != null)
                     context.PSSetShaderResource(0, mesh.Texture.D3DShaderResourceView);
                 foreach (var partition in mesh.PartitionMeshes) {
-                    Pose currentPose = MainViewModel.Instance.LoadedAnimation.Poses[MainViewModel.Instance.CurrentFrame];
                     for (int i = 0; i < partition.BoneMap.Count; i++) {
                         int i_bone_mesh = partition.BoneMap[i];
                         int i_bone_global = mesh.BoneMap[i_bone_mesh];
-                        array_boneMatrices[i] = Matrix4x4.Identity;
-                        //array_boneMatrices[i] *= Skeleton.Instance.Bones[i_bone_global].WorldTransformMatrix;
-                        //array_boneMatrices[i] *= mesh.BoneLocals[i_bone_mesh].Matrix;
+                        Bone bone = Skeleton.Instance.Bones[i_bone_global];
+                        Transform transform = mesh.BoneInverseTransforms[i_bone_mesh] * bone.GlobalTransform;
+                        array_boneMatrices[i] = transform.Matrix;
                     }
                     context.WriteBuffer(cb_boneMatrices, array_boneMatrices);
                     context.IASetVertexBuffer(0, mesh.VertexBuffer, (uint)Marshal.SizeOf<Vector3>());
@@ -214,8 +219,7 @@ public class D3D11View : D3D11Control {
             context.DrawIndexed(10, 0, 0);
         }
 
-        void DrawSkeleton(){
-            Skeleton.Instance.UpdateBonePositions();
+        void DrawSkeleton() {
             SkeletonPointsShader.Instance.Use(context);
             context.VSSetConstantBuffer(0, cb0);
             context.WriteBuffer(cb_bone, Skeleton.Instance.SelectedBone?.Index ?? -1);
