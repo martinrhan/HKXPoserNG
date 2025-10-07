@@ -7,9 +7,8 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 IsHitTestVisible="True"
              x:Class="HKXPoserNG.Views.MainView">
-  <Panel>
-	<DockPanel>
-	  <Menu DockPanel.Dock="Top">
+  <Grid ColumnDefinitions="*, auto, auto" RowDefinitions="auto, *, auto">
+	  <Menu Grid.Row="0" Grid.ColumnSpan="2">
 		<MenuItem Header="File">
 		  <MenuItem Header="Open" Command="{Binding OpenCommand}" />
 		  <MenuItem Header="Save" Command="{Binding SaveCommand}" />
@@ -20,10 +19,10 @@
 		  </MenuItem>
 		</MenuItem>
 	  </Menu>
-	  <v:SkeletonView DockPanel.Dock="Right" Width="200"/>
-	  <v:BoneView DockPanel.Dock="Right" Width="200" VerticalAlignment="Top"/>
-	  <v:AnimationView DockPanel.Dock="Bottom" Height="100"/>
-	  <v:D3D11View ZIndex="-1"/>
-	</DockPanel>
-  </Panel>
+	  <GridSplitter Grid.Column="1" Grid.RowSpan="3" Width="5"/>
+	  <v:SkeletonView Grid.Column="2" Grid.RowSpan="3"/>
+	  <v:D3D11View Grid.Row="1" ZIndex="-1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+	  <v:BoneView Grid.Row="1" Width="200" VerticalAlignment="Top" HorizontalAlignment="Right"/>
+	  <v:AnimationView Grid.Row="2" Height="100"/>
+  </Grid>
 </UserControl>

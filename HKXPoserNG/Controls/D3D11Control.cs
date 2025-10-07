@@ -22,10 +22,25 @@ using Vortice.Mathematics;
 namespace HKXPoserNG.Controls;
 
 public class D3D11Control : Control, ICustomHitTest {
-    public D3D11Control(int textureWidth, int textureHeight) {
-        this.TextureWidth = textureWidth;
-        this.TextureHeight = textureHeight;
+    public int TextureWidth { get; private set; }
+    public int TextureHeight { get; private set; }
 
+    protected ID3D11Texture2D? RenderTargetTexture { get; private set; }
+    protected ID3D11RenderTargetView? RenderTargetView { get; private set; }
+    protected ID3D11Texture2D? DepthStencilTexture { get; private set; }
+    protected ID3D11DepthStencilView? DepthStencilView { get; private set; }
+
+    private ICompositionImportedGpuImage? importedImage;
+    private CompositionDrawingSurface? compositionDrawingSurface;
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e) {
+        RenderTargetView?.Dispose();
+        RenderTargetTexture?.Dispose();
+        DepthStencilView?.Dispose();
+        DepthStencilTexture?.Dispose();
+        var pixelSize = PixelSize.FromSize(e.NewSize, VisualRoot!.RenderScaling);
+        TextureWidth = pixelSize.Width;
+        TextureHeight = pixelSize.Height;
         RenderTargetTexture = DXObjects.D3D11Device.CreateTexture2D1(new() {
             Format = Format.R8G8B8A8_UNorm,
             Width = (uint)TextureWidth,
@@ -55,20 +70,6 @@ public class D3D11Control : Control, ICustomHitTest {
         DepthStencilView = DXObjects.D3D11Device.CreateDepthStencilView(DepthStencilTexture);
         DXObjects.D3D11Device.ImmediateContext.OMSetRenderTargets(RenderTargetView, DepthStencilView);
         mutex = RenderTargetTexture.QueryInterface<IDXGIKeyedMutex>();
-    }
-
-    public int TextureWidth { get; }
-    public int TextureHeight { get; }
-
-    protected ID3D11Texture2D RenderTargetTexture { get; }
-    protected ID3D11RenderTargetView RenderTargetView { get; }
-    protected ID3D11Texture2D DepthStencilTexture { get; }
-    protected ID3D11DepthStencilView DepthStencilView { get; }
-
-    private ICompositionImportedGpuImage importedImage;
-    private CompositionDrawingSurface? compositionDrawingSurface;
-
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) {
         Compositor compositor = ElementComposition.GetElementVisual(this)!.Compositor;
         var task = compositor.TryGetCompositionGpuInterop();
         ICompositionGpuInterop? gpuInterop = task.Result;
@@ -92,15 +93,15 @@ public class D3D11Control : Control, ICustomHitTest {
         ElementComposition.SetElementChildVisual(this, visual);
     }
 
-    private IDXGIKeyedMutex mutex;
+    private IDXGIKeyedMutex? mutex;
 
     protected void BeginDraw() {
         var context = DXObjects.D3D11Device.ImmediateContext;
-        mutex.AcquireSync(0, int.MaxValue);
+        mutex!.AcquireSync(0, int.MaxValue);
     }
 
     protected Task EndDraw() {
-        mutex.ReleaseSync(1);
+        mutex!.ReleaseSync(1);
         Task task = compositionDrawingSurface!.UpdateWithKeyedMutexAsync(importedImage!, 1, 0);
         return task;
     }

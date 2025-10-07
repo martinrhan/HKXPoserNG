@@ -1,41 +1,34 @@
-cbuffer cb : register(b0)
-{
+cbuffer cb : register(b0) {
     float4x4 wvp;
     int2 rts;
 }
 
 // update by submesh, for VS
-cbuffer cb_submesh : register(b1)
-{
+cbuffer cb_submesh : register(b1) {
     float4x4 palette[40];
 }
 
 // update by mesh, for PS
-cbuffer cb_mesh : register(b2)
-{
+cbuffer cb_mesh : register(b2) {
     unsigned int SLSF1;
     unsigned int SLSF2;
     unsigned int unknown2;
     unsigned int unknown3;
 }
 
-
-struct VS_IN
-{
+struct VS_IN {
     float3 position : POSITION;
     float3 normal : NORMAL;
     float4 weights : BLENDWEIGHT;
     uint4 indices : BLENDINDICES;
 };
 
-struct PS_IN
-{
+struct PS_IN {
     float4 position : SV_Position;
     float color : COLOR;
 };
 
-PS_IN VS(VS_IN input)
-{
+PS_IN VS(VS_IN input) {
     PS_IN output;
     float4x4 mat =
         palette[input.indices.x] * (float) input.weights.x +
@@ -46,6 +39,9 @@ PS_IN VS(VS_IN input)
     float4 p = float4(input.position, 1);
     p = mul(mat, p);
     p = mul(wvp, p);
+    
+    float aspectRatio = (float) rts.y / (float) rts.x;
+    p.x *= aspectRatio;
     
     float4 n_4 = float4(input.normal, 0);
     n_4 = mul(mat, n_4);
@@ -58,9 +54,7 @@ PS_IN VS(VS_IN input)
     return output;
 }
 
-
-float4 PS(PS_IN input) : SV_Target
-{
+float4 PS(PS_IN input) : SV_Target {
     float c = input.color;
     return float4(c, c, c, 1);
 }

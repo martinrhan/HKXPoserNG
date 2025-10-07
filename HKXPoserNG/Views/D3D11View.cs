@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -21,8 +22,7 @@ using Vortice.DXGI;
 namespace HKXPoserNG.Views;
 
 public class D3D11View : D3D11Control {
-    public D3D11View() : this(800, 600) { }
-    public D3D11View(int width, int height) : base(width, height) {
+    public D3D11View() {
         this.Focusable = true;
         this.IsHitTestVisible = true;
 
@@ -36,9 +36,6 @@ public class D3D11View : D3D11Control {
                 needRedraw = true;
             }
         };
-
-        cb0_data.rtwidth = width;
-        cb0_data.rtheight = height;
 
         ID3D11DeviceContext context = DXObjects.D3D11Device.ImmediateContext;
 
@@ -153,7 +150,7 @@ public class D3D11View : D3D11Control {
             context.PSSetConstantBuffer(2, cb_shaderFlags);
             context.RSSetViewport(0, 0, TextureWidth, TextureHeight);
             context.RSSetState(rasterizerState);
-            context.OMSetRenderTargets(RenderTargetView, DepthStencilView);
+            context.OMSetRenderTargets(RenderTargetView!, DepthStencilView);
             context.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
             foreach (var mesh in BodyModel.Instance.Meshes) {
                 array_shaderFlags[0] = (uint)mesh.SLSF1;
@@ -181,30 +178,32 @@ public class D3D11View : D3D11Control {
         }
 
         void DrawAxis() {
+            float aspectRatio = (float)TextureHeight / TextureWidth;
+
             Vector4 origin = new(0, 0, 0, 1);
             Vector4 origin_clip = Vector4.Transform(origin, cb0_data.wvp);
-            Vector3 origin_ndc = new(origin_clip.X / origin_clip.W, origin_clip.Y / origin_clip.W, origin_clip.Z / origin_clip.W);
+            Vector3 origin_ndc = new(origin_clip.X / origin_clip.W * aspectRatio, origin_clip.Y / origin_clip.W, origin_clip.Z / origin_clip.W);
 
             Vector4 unitx = new(10, 0, 0, 1);
             Vector4 unitx_clip = Vector4.Transform(unitx, cb0_data.wvp);
-            Vector3 unitx_ndc = new(unitx_clip.X / unitx_clip.W, unitx_clip.Y / unitx_clip.W, unitx_clip.Z / unitx_clip.W);
+            Vector3 unitx_ndc = new(unitx_clip.X / unitx_clip.W * aspectRatio, unitx_clip.Y / unitx_clip.W, unitx_clip.Z / unitx_clip.W);
 
             Vector4 unity = new(0, 10, 0, 1);
             Vector4 unity_clip = Vector4.Transform(unity, cb0_data.wvp);
-            Vector3 unity_ndc = new(unity_clip.X / unity_clip.W, unity_clip.Y / unity_clip.W, unity_clip.Z / unity_clip.W);
+            Vector3 unity_ndc = new(unity_clip.X / unity_clip.W * aspectRatio, unity_clip.Y / unity_clip.W, unity_clip.Z / unity_clip.W);
 
             Vector4 unitz = new(0, 0, 10, 1);
             Vector4 unitz_clip = Vector4.Transform(unitz, cb0_data.wvp);
-            Vector3 unitz_ndc = new(unitz_clip.X / unitz_clip.W, unitz_clip.Y / unitz_clip.W, unitz_clip.Z / unitz_clip.W);
+            Vector3 unitz_ndc = new(unitz_clip.X / unitz_clip.W * aspectRatio, unitz_clip.Y / unitz_clip.W, unitz_clip.Z / unitz_clip.W);
 
             Vector4 focus_clip = Vector4.Transform(new Vector4(focusPoint, 1), cb0_data.wvp);
-            Vector3 focus_ndc = new(focus_clip.X / focus_clip.W, focus_clip.Y / focus_clip.W, focus_clip.Z / focus_clip.W);
+            Vector3 focus_ndc = new(focus_clip.X / focus_clip.W * aspectRatio, focus_clip.Y / focus_clip.W, focus_clip.Z / focus_clip.W);
 
             Vector3[] axis_vertices = [
                 origin_ndc, unitx_ndc,
                 origin_ndc, unity_ndc,
                 origin_ndc, unitz_ndc,
-                focus_ndc with {X = focus_ndc.X - .1f}, focus_ndc with {X = focus_ndc.X + .1f},
+                focus_ndc with {X = focus_ndc.X - .1f * aspectRatio}, focus_ndc with {X = focus_ndc.X + .1f * aspectRatio},
                 focus_ndc with {Y = focus_ndc.Y - .1f}, focus_ndc with {Y = focus_ndc.Y + .1f},
             ];
             context.WriteBuffer(vb_axis, axis_vertices);
@@ -214,7 +213,7 @@ public class D3D11View : D3D11Control {
             context.IASetVertexBuffer(1, vb_axis_color, (uint)Marshal.SizeOf<Vector3>());
             context.IASetIndexBuffer(ib_axis, Format.R16_UInt, 0);
             context.RSSetViewport(0, 0, TextureWidth, TextureHeight);
-            context.OMSetRenderTargets(RenderTargetView);
+            context.OMSetRenderTargets(RenderTargetView!);
             context.IASetPrimitiveTopology(PrimitiveTopology.LineList);
             context.DrawIndexed(10, 0, 0);
         }
@@ -222,11 +221,12 @@ public class D3D11View : D3D11Control {
         void DrawSkeleton() {
             SkeletonPointsShader.Instance.Use(context);
             context.VSSetConstantBuffer(0, cb0);
+            context.GSSetConstantBuffer(0, cb0);
             context.WriteBuffer(cb_bone, Skeleton.Instance.SelectedBone?.Index ?? -1);
             context.VSSetConstantBuffer(1, cb_bone);
             context.IASetVertexBuffer(0, Skeleton.Instance.BoneVertexBuffer, (uint)Marshal.SizeOf<Vector3>());
             context.RSSetViewport(0, 0, TextureWidth, TextureHeight);
-            context.OMSetRenderTargets(RenderTargetView);
+            context.OMSetRenderTargets(RenderTargetView!);
             context.IASetPrimitiveTopology(PrimitiveTopology.PointList);
             context.Draw((uint)Skeleton.Instance.Bones.Count, 0);
             context.ClearState();
@@ -234,7 +234,7 @@ public class D3D11View : D3D11Control {
             context.VSSetConstantBuffer(0, cb0);
             context.IASetVertexBuffer(0, Skeleton.Instance.BoneVertexBuffer, (uint)Marshal.SizeOf<Vector3>());
             context.RSSetViewport(0, 0, TextureWidth, TextureHeight);
-            context.OMSetRenderTargets(RenderTargetView);
+            context.OMSetRenderTargets(RenderTargetView!);
             context.IASetIndexBuffer(Skeleton.Instance.LineIndexBuffer, Format.R16_UInt, 0);
             context.IASetPrimitiveTopology(PrimitiveTopology.LineList);
             context.DrawIndexed(Skeleton.Instance.LineIndexBuffer.Description.ByteWidth / 2, 0, 0);
@@ -262,6 +262,8 @@ public class D3D11View : D3D11Control {
     private void UpdateConstantBuffer0() {
         ID3D11DeviceContext context = DXObjects.D3D11Device.ImmediateContext;
         cb0_data.wvp = GetWorldViewProjection();
+        cb0_data.rtheight = TextureHeight;
+        cb0_data.rtwidth = TextureWidth;
         context.WriteBuffer(cb0, cb0_data);
 
         Matrix4x4 GetWorldViewProjection() {
@@ -342,4 +344,8 @@ public class D3D11View : D3D11Control {
         );
     }
 
+    protected override void OnSizeChanged(SizeChangedEventArgs e) {
+        base.OnSizeChanged(e);
+        needRedraw = true;
+    }
 }
