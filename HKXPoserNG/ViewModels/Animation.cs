@@ -1,5 +1,6 @@
 using HKX2;
 using HKXPoserNG.Extensions;
+using HKXPoserNG.Mvvm;
 using PropertyChanged.SourceGenerator;
 using SingletonSourceGenerator.Attributes;
 using System;
@@ -13,8 +14,17 @@ namespace HKXPoserNG.ViewModels;
 
 [Singleton]
 public partial class Animation {
-    [Notify, AlsoNotify(nameof(CurrentPose))]
+    [Notify, AlsoNotify(nameof(CurrentPose)), AlsoNotify(nameof(CurrentTime))]
     private int currentFrame = 0;
+
+    public float CurrentTime => CurrentPose.Time;
+
+    [Notify]
+    private bool isPlaying = false;
+    public SimpleCommand TogglePlayCommand => new(() => {
+        if (currentFrame == FrameCountMinusOne) CurrentFrame = 0;
+        IsPlaying = !IsPlaying;
+    });
 
     [Notify, AlsoNotify(nameof(FrameCountMinusOne))]
     private int frameCount = 0;
@@ -44,7 +54,7 @@ public partial class Animation {
         string path_out_hkdump = Path.Combine(PathConstants.TempDirectory, $"{name_no_ext}.bin");
         ExternalPrograms.HKDump(path_out_hct, path_out_hkdump);
         LoadFromHKDump(path_out_hkdump);
-        //LoadFromHKX2(fileInfo.FullName);
+        LoadFromHKX2(fileInfo.FullName);
         CurrentFrame = 0;
     }
 
@@ -93,38 +103,15 @@ public partial class Animation {
         OnPropertyChanged(new(nameof(NumFloats)));
     }
 
-    //private void LoadFromHKX2(string path) {
-    //    using (Stream stream = File.OpenRead(path)) {
-    //        PackFileDeserializer deserializer = new();
-    //        BinaryReaderEx reader = new(stream);
-    //        hkRootLevelContainer hkRoot = (hkRootLevelContainer)deserializer.Deserialize(reader);
-    //        hkaAnimationContainer hkaAnimationContainer = (hkaAnimationContainer)hkRoot.m_namedVariants[0]!.m_variant!;
-    //        IEnumerable<string> names = hkaAnimationContainer.m_animations[0]!.m_annotationTracks.Select(t => t.m_trackName);
-    //        int i = 0;
-    //        foreach (string name in names) {
-    //            Bone? bone;
-    //            if (Skeleton.Instance.BoneDictionary.TryGetValue(name, out bone)) {
-    //                boneMap[bone] = i;
-    //                //Debug.WriteLine($"Bone '{name}' found in skeleton.");
-    //            } else {
-    //                //Debug.WriteLine($"Bone '{name}' not found in skeleton.");
-    //                string side = name[^1..];
-    //                if (side != "L" && side != "R") continue;
-    //                int index = name.IndexOf('[');
-    //                string name_new = name[..^2];
-    //                name_new = name_new.Insert(index + 1, side);
-    //                name_new = name_new.Insert(3, ' ' + side);
-    //                if (Skeleton.Instance.BoneDictionary.TryGetValue(name_new, out bone)) {
-    //                    boneMap[bone] = i;
-    //                    //Debug.WriteLine($"Bone '{name_new}' found in skeleton.");
-    //                } else {
-    //                    Debug.WriteLine($"Bone '{name}' and '{name_new}' not found in skeleton.");
-    //                }
-    //            }
-    //            i++;
-    //        }
-    //    }
-    //}
+    private void LoadFromHKX2(string path) {
+        using (Stream stream = File.OpenRead(path)) {
+            PackFileDeserializer deserializer = new();
+            BinaryReaderEx reader = new(stream);
+            hkRootLevelContainer hkRoot = (hkRootLevelContainer)deserializer.Deserialize(reader);
+            hkaAnimationContainer hkaAnimationContainer = (hkaAnimationContainer)hkRoot.m_namedVariants[0]!.m_variant!;
+            hkaAnimation animation = hkaAnimationContainer.m_animations[0]!;
+        }
+    }
 
     public void SaveToHKDump(string filename) {
         using (Stream stream = File.Create(filename))

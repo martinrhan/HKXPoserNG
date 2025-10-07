@@ -54,7 +54,7 @@ public partial class Skeleton {
             this.bones = new Bone[nbones];
             bones.Populate(i => new Bone() {
                 Index = i,
-                Name = boneNames[i],
+                Name = boneNames[i], 
                 Parent = parentIndices[i] == -1 ? null : bones[parentIndices[i]],
             });
             foreach (Bone bone in bones) {

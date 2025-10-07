@@ -8,21 +8,22 @@
 			 IsHitTestVisible="True"
              x:Class="HKXPoserNG.Views.MainView">
   <Grid ColumnDefinitions="*, auto, auto" RowDefinitions="auto, *, auto">
-	  <Menu Grid.Row="0" Grid.ColumnSpan="2">
-		<MenuItem Header="File">
-		  <MenuItem Header="Open" Command="{Binding OpenCommand}" />
-		  <MenuItem Header="Save" Command="{Binding SaveCommand}" />
-		</MenuItem>
-		<MenuItem Header="Operations">
-		  <MenuItem Header="Move Focus Point To">
-			<MenuItem Header="Selected Bone"/>
-		  </MenuItem>
-		</MenuItem>
-	  </Menu>
-	  <GridSplitter Grid.Column="1" Grid.RowSpan="3" Width="5"/>
-	  <v:SkeletonView Grid.Column="2" Grid.RowSpan="3"/>
-	  <v:D3D11View Grid.Row="1" ZIndex="-1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-	  <v:BoneView Grid.Row="1" Width="200" VerticalAlignment="Top" HorizontalAlignment="Right"/>
-	  <v:AnimationView Grid.Row="2" Height="100"/>
+	<Menu Name="menu" Grid.Row="0" Grid.ColumnSpan="2" DataContext="{x:Static vm:MenuViewModel.Instance}" ItemsSource="{Binding Items}">
+	  <Menu.Styles>
+		<Style Selector="MenuItem">
+		  <Setter Property="Header" Value="{Binding Header}"/>
+		  <Setter Property="ItemsSource" Value="{Binding Items}"/>
+		  <Setter Property="Command" Value="{Binding Command}"/>
+		  <Setter Property="InputGesture" Value="{Binding HotKey}"/>
+		  <Setter Property="HotKey" Value="{Binding HotKey}"/>
+		  <Setter Property="Icon" Value="{Binding Icon}"/>
+		 </Style>
+	  </Menu.Styles>
+	</Menu>
+	<GridSplitter Grid.Column="1" Grid.RowSpan="3" Width="5"/>
+	<v:SkeletonView Grid.Column="2" Grid.RowSpan="3"/>
+	<v:D3D11View Grid.Row="1" ZIndex="-1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+	<v:BoneView Grid.Row="1" Width="200" VerticalAlignment="Top" HorizontalAlignment="Right"/>
+	<v:AnimationView Grid.Row="2" Height="100"/>
   </Grid>
 </UserControl>

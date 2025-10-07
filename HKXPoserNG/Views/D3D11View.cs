@@ -289,11 +289,11 @@ public class D3D11View : D3D11Control {
         }
     }
 
-    private Vector3 focusPoint = new(0, 0, 0);
-    private float cameraYaw = 0f;
+    private Vector3 focusPoint = new(0, 0, 50);
+    private float cameraYaw = MathF.PI;
     private float cameraPitch = 0f;
-    private float cameraDistance = 40f;
-    private Vector3 cameraPosition = new(0, -40, 0);
+    private float cameraDistance = 100f;
+    private Vector3 cameraPosition = new(0, 100, 50);
     private bool isLeftPointerPressed = false;
     private bool isMiddlePointerPressed = false;
     private Point lastPointerPosition;

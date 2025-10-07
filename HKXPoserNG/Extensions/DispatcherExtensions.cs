@@ -8,6 +8,17 @@ using System.Threading.Tasks;
 namespace HKXPoserNG.Extensions;
 
 public static class DispatcherExtensions {
+    public static void WaitForConditionAndContinue(this Dispatcher dispatcher, Func<bool> condition, Action continuation) {
+        void DispatcherRecursion() {
+            if (condition()) {
+                continuation();
+            } else {
+                dispatcher.InvokeAsync(DispatcherRecursion, DispatcherPriority.Background);
+            }
+        }
+        DispatcherRecursion();
+    }
+
     public static void WaitForTaskAndContinue<T>(this Dispatcher dispatcher, Task<T> task, Action<T> continuation) {
         void DispatcherRecursion() {
             if (task.IsCompletedSuccessfully) {
