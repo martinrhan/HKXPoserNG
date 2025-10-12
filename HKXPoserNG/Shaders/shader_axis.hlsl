@@ -20,7 +20,7 @@ PS_IN VS(VS_IN vs_in) {
     return output;
 }
 
-PS_OUT PS(PS_IN ps_in) : SV_Target {
+PS_OUT PS(PS_IN ps_in) {
     PS_OUT output;
     output.color = float4(0, 0, 0, 1);
     output.color = float4(ps_in.color, 1);

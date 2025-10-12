@@ -8,13 +8,10 @@ using HKXPoserNG.Extensions;
 using HKXPoserNG.Shaders;
 using HKXPoserNG.ViewModels;
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Vortice.D3DCompiler;
 using Vortice.Direct3D;
 using Vortice.Direct3D11;
 using Vortice.DXGI;
@@ -150,7 +147,7 @@ public class D3D11View : D3D11Control {
             context.PSSetConstantBuffer(2, cb_shaderFlags);
             context.RSSetViewport(0, 0, TextureWidth, TextureHeight);
             context.RSSetState(rasterizerState);
-            context.OMSetRenderTargets(RenderTargetView!, DepthStencilView);
+            context.OMSetRenderTargets(RenderTargetView0!, DepthStencilView);
             context.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
             foreach (var mesh in BodyModel.Instance.Meshes) {
                 array_shaderFlags[0] = (uint)mesh.SLSF1;
@@ -213,7 +210,7 @@ public class D3D11View : D3D11Control {
             context.IASetVertexBuffer(1, vb_axis_color, (uint)Marshal.SizeOf<Vector3>());
             context.IASetIndexBuffer(ib_axis, Format.R16_UInt, 0);
             context.RSSetViewport(0, 0, TextureWidth, TextureHeight);
-            context.OMSetRenderTargets(RenderTargetView!);
+            context.OMSetRenderTargets(RenderTargetView0!);
             context.IASetPrimitiveTopology(PrimitiveTopology.LineList);
             context.DrawIndexed(10, 0, 0);
         }
@@ -226,7 +223,9 @@ public class D3D11View : D3D11Control {
             context.VSSetConstantBuffer(1, cb_bone);
             context.IASetVertexBuffer(0, Skeleton.Instance.BoneVertexBuffer, (uint)Marshal.SizeOf<Vector3>());
             context.RSSetViewport(0, 0, TextureWidth, TextureHeight);
-            context.OMSetRenderTargets(RenderTargetView!);
+            context.OMSetRenderTargets(2, [RenderTargetView0!, RenderTargetView1!], DepthStencilView);
+            context.ClearRenderTargetView(RenderTargetView1, new(0));
+            context.ClearDepthStencilView(DepthStencilView, DepthStencilClearFlags.Depth, 1, 0);
             context.IASetPrimitiveTopology(PrimitiveTopology.PointList);
             context.Draw((uint)Skeleton.Instance.Bones.Count, 0);
             context.ClearState();
@@ -234,14 +233,14 @@ public class D3D11View : D3D11Control {
             context.VSSetConstantBuffer(0, cb0);
             context.IASetVertexBuffer(0, Skeleton.Instance.BoneVertexBuffer, (uint)Marshal.SizeOf<Vector3>());
             context.RSSetViewport(0, 0, TextureWidth, TextureHeight);
-            context.OMSetRenderTargets(RenderTargetView!);
+            context.OMSetRenderTargets(RenderTargetView0!);
             context.IASetIndexBuffer(Skeleton.Instance.LineIndexBuffer, Format.R16_UInt, 0);
             context.IASetPrimitiveTopology(PrimitiveTopology.LineList);
             context.DrawIndexed(Skeleton.Instance.LineIndexBuffer.Description.ByteWidth / 2, 0, 0);
         }
 
         BeginDraw();
-        context.ClearRenderTargetView(RenderTargetView, new(0xffffffff));
+        context.ClearRenderTargetView(RenderTargetView0, new(0xffffffff));
         context.ClearDepthStencilView(DepthStencilView, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1.0f, 0);
         context.ClearState();
         DrawCharacter();
@@ -297,10 +296,14 @@ public class D3D11View : D3D11Control {
     private bool isLeftPointerPressed = false;
     private bool isMiddlePointerPressed = false;
     private Point lastPointerPosition;
+    private Stopwatch pointerPressedStopWatch = new();
     protected override void OnPointerPressed(PointerPressedEventArgs e) {
         isLeftPointerPressed = e.Properties.IsLeftButtonPressed;
         isMiddlePointerPressed = e.Properties.IsMiddleButtonPressed;
         lastPointerPosition = e.GetPosition(this);
+        if (isLeftPointerPressed) {
+            pointerPressedStopWatch.Restart();
+        }
     }
     protected override void OnPointerMoved(PointerEventArgs e) {
         Point currentPointerPosition = e.GetPosition(this);
@@ -327,6 +330,17 @@ public class D3D11View : D3D11Control {
         lastPointerPosition = currentPointerPosition;
     }
     protected override void OnPointerReleased(PointerReleasedEventArgs e) {
+        if (isLeftPointerPressed) {
+            if (pointerPressedStopWatch.ElapsedMilliseconds < 500) {
+                Point p = e.GetPosition(this);
+                PixelPoint pp = PixelPoint.FromPoint(p, VisualRoot!.RenderScaling);
+                ushort index = GetPixelFromRenderTargetTexture1(pp.X, pp.Y);
+                if (index != 0) {
+                    Skeleton.Instance.SelectedBone = Skeleton.Instance.Bones[index];
+                }
+            }
+            pointerPressedStopWatch.Stop();
+        }
         isLeftPointerPressed = e.Properties.IsLeftButtonPressed;
         isMiddlePointerPressed = e.Properties.IsMiddleButtonPressed;
     }
