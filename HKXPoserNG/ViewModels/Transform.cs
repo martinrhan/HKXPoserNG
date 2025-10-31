@@ -5,12 +5,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Numerics;
 
+namespace HKXPoserNG.ViewModels;
+
 public readonly struct Transform : IEquatable<Transform> {
     public static Transform Identity { get; } = new Transform(Vector3.Zero, Quaternion.Identity, 1);
 
-    public float Scale { get; }
-    public Quaternion Rotation { get; }
-    public Vector3 Translation { get; }
+    public float Scale { get; init; }
+    public Quaternion Rotation { get; init; }
+    public Vector3 Translation { get; init; }
 
     public Matrix4x4 Matrix =>
         Matrix4x4.CreateScale(Scale) * Matrix4x4.CreateFromQuaternion(Rotation) * Matrix4x4.CreateTranslation(Translation);
@@ -26,8 +28,6 @@ public readonly struct Transform : IEquatable<Transform> {
 
     public Transform(Vector3 translation, Matrix33 rotation, float scale) :
         this(translation, Quaternion.CreateFromRotationMatrix(rotation.ToMatrix4x4()), scale) {
-        Quaternion q = Quaternion.CreateFromRotationMatrix(rotation.ToMatrix4x4());
-        Matrix4x4 m = Matrix4x4.CreateFromQuaternion(Rotation);
     }
 
     public Transform(BinaryReader reader) {
@@ -91,5 +91,12 @@ public readonly struct Transform : IEquatable<Transform> {
         Quaternion invRotation = Quaternion.Conjugate(Rotation);
         Vector3 invTranslation = Vector3.Transform(-Translation * invScale, invRotation);
         return new Transform(invTranslation, invRotation, invScale);
+    }
+
+    public static Transform Lerp(Transform a, Transform b, float t) {
+        float scale = a.Scale * (1 - t) + b.Scale * t;
+        Quaternion rotation = Quaternion.Normalize(a.Rotation * (1 - t) + b.Rotation * t);
+        Vector3 translation = Vector3.Lerp(a.Translation, b.Translation, t);
+        return new(translation, rotation, scale);
     }
 }

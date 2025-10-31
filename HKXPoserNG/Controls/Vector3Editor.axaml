@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	         xmlns:c="using:HKXPoserNG.Controls"
+             mc:Ignorable="d" d:DesignWidth="300"
+             x:Class="HKXPoserNG.Vector3Editor">
+  <Grid ColumnDefinitions="auto,*,auto,*,auto,*">
+	<Grid.Styles>
+	  <Style Selector="TextBlock">
+		<Setter Property="Margin" Value="5,0"/>
+		<Setter Property="VerticalAlignment" Value="Center"/>
+	  </Style>
+	</Grid.Styles>
+	<TextBlock Grid.Column="0">X</TextBlock>
+	<c:SliderCoveredNumberBox Name="numberBoxX" Grid.Column="1"/>
+	<TextBlock Grid.Column="2">Y</TextBlock>
+	<c:SliderCoveredNumberBox Name="numberBoxY" Grid.Column="3"/>
+	<TextBlock Grid.Column="4">Z</TextBlock>
+	<c:SliderCoveredNumberBox Name="numberBoxZ" Grid.Column="5"/>
+  </Grid>
+</UserControl>

@@ -41,6 +41,9 @@
 	<None Update="**\*.hlsl">
 	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</None>
+	<Compile Update="Views\AnimationController.axaml.cs">
+	  <DependentUpon>AnimationController.axaml</DependentUpon>
+	</Compile>
 	<None Update="win32.hko">
 	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</None>

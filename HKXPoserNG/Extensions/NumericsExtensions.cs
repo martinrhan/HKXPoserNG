@@ -1,19 +1,9 @@
 using NiflySharp.Structs;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using Vortice.Mathematics;
+using System.Runtime.CompilerServices;
 
 namespace HKXPoserNG.Extensions;
-
-public static class MathExtensions {
-
-    public static float Square(this float x) => x * x;
-
-}
 
 public static class NumericsExtensions {
     public static Matrix4x4 ToMatrix4x4(this in Matrix33 mat) {
@@ -57,12 +47,19 @@ public static class NumericsExtensions {
             MathF.Abs(mat1.M43 - mat2.M43) < tolerance &&
             MathF.Abs(mat1.M44 - mat2.M44) < tolerance;
     }
-}
 
-public static class IReadOnlyListExtensions {
-    public static T GetOrDefault<T>(this IReadOnlyList<T> list, int index, T defaultValue = default!) {
-        if (index < 0 || index >= list.Count)
-            return defaultValue;
-        return list[index];
+    public static (Vector3 axis, float theta) ToAxisAngle(this Quaternion q) {
+        float theta;
+        Vector3 axis;
+        if(q.W == 1) {
+            theta = 0;
+            axis = Vector3.UnitX;
+        } else {
+            theta = 2 * MathF.Acos(q.W);
+            float f = MathF.Sin(theta / 2);
+            f = 1 / f;
+            axis = new(q.X * f, q.Y * f, q.Z * f);
+        }
+        return (axis, theta);
     }
 }

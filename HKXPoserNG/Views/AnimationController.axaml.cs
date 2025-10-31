@@ -9,8 +9,8 @@ using System.Diagnostics;
 
 namespace HKXPoserNG.Views;
 
-public partial class AnimationView : UserControl {
-    public AnimationView() {
+public partial class AnimationController : UserControl {
+    public AnimationController() {
         DataContext = ViewModels.Animation.Instance;
         InitializeComponent();
         MaterialIcon icon = new() {

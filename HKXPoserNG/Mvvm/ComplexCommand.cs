@@ -1,17 +1,22 @@
 using System;
-using System.Reactive;
 using System.Windows.Input;
 
 namespace HKXPoserNG.Mvvm;
 
-public class SimpleCommand : ICommand {
-    public SimpleCommand(Action execute) {
+public class ComplexCommand : ICommand {
+    public ComplexCommand(Action execute, Func<bool> canExecute) {
         this.execute = execute ?? (() => { });
+        this.canExecute = canExecute;
     }
     public event EventHandler? CanExecuteChanged;
+     
+    public void NotifyCanExecuteChanged() {
+        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    }
 
+    private Func<bool> canExecute;
     public bool CanExecute(object? parameter) {
-        return true;
+        return canExecute();
     }
 
     private Action execute;

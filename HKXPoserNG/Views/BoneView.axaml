@@ -2,20 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="60"
+			 xmlns:c="using:HKXPoserNG.Controls"
+             mc:Ignorable="d" d:DesignWidth="100"
              x:Class="HKXPoserNG.Views.BoneView"
 			 >
-  <Grid RowDefinitions="*,*,*" ColumnDefinitions="auto, *">
-	<Grid.Styles>
-	  <Style Selector="TextBlock">
-		<Setter Property="Margin" Value="5, 0"/>
-	  </Style>
-	</Grid.Styles>
-	<TextBlock Grid.Row="0">S</TextBlock>
-	<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding LocalTransform.Scale}"></TextBox>
-	<TextBlock Grid.Row="1">R</TextBlock>
-	<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding LocalTransform.Rotation}"></TextBox>
-	<TextBlock Grid.Row="2">T</TextBlock>
-	<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding LocalTransform.Translation}"></TextBox>
+  <Grid Name="grid">
   </Grid>
 </UserControl>

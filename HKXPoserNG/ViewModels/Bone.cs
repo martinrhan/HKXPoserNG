@@ -13,9 +13,17 @@ public partial class Bone {
     public Bone? Parent { get; set; }
     public List<Bone> Children { get; } = new List<Bone>();
     
-    public Transform LocalTransform => Animation.Instance.Poses[Animation.Instance.CurrentFrame].Transforms.GetOrDefault(Index, Transform.Identity);
+    public Transform LocalOriginal => Animation.Instance.Poses[Animation.Instance.CurrentFrame].Transforms.GetOrDefault(Index, Transform.Identity);
+    
+    public Transform LocalModification {
+        get => AnimationEditor.Instance.GetCurrentBoneLocalModification(Index);
+        set => AnimationEditor.Instance.SetCurrentBoneLocalModification(Index, value);
+    }
+    public bool IsCurrentlyModifiable => AnimationEditor.Instance.IsBoneCurrentlyModifiable(Index);
+    
 
-    public Transform GlobalTransform => Skeleton.Instance.BoneGlobalTransforms.GetOrDefault(Index, Transform.Identity);
+    public Transform LocalModified => LocalModification * LocalOriginal;
+    public Transform GlobalModified => Skeleton.Instance.BoneGlobalModifiedTransforms.GetOrDefault(Index, Transform.Identity);
 
     [Notify]
     private bool hide = false;

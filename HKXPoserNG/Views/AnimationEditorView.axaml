@@ -1,0 +1,48 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:v="using:HKXPoserNG.Views"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="HKXPoserNG.Views.AnimationEditorView" Background="White">
+  <Grid RowDefinitions="auto, *">
+	<Panel>
+	  <v:AnimationController HorizontalAlignment="Left"/>
+	  <Menu ItemsSource="{Binding MenuItems}" HorizontalAlignment="Right">
+		<ItemsControl.ItemsPanel>
+		  <ItemsPanelTemplate>
+			<StackPanel Orientation="Vertical"/>
+		  </ItemsPanelTemplate>
+		</ItemsControl.ItemsPanel>
+	  </Menu>
+	</Panel>
+	<Grid Grid.Row="1" ColumnDefinitions="auto, *">
+	  <Grid.Styles>
+		<Style Selector="ItemsControl">
+		  <Setter Property="ItemsSource" Value="{Binding ModificationTracks}"/>
+		  <Setter Property="Background" Value="Transparent"/>
+		  <Setter Property="ItemsPanel">
+			<ItemsPanelTemplate>
+			  <StackPanel Orientation="Vertical"/>
+			</ItemsPanelTemplate>
+		  </Setter>
+		</Style>
+	  </Grid.Styles>
+	  <ItemsControl Width="{Binding TrackNameColumnWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}">
+		<ItemsControl.ItemTemplate>
+		  <DataTemplate>
+			<TextBox Text="{Binding Name}" Height="{Binding TrackRowHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"/>
+		  </DataTemplate>
+		</ItemsControl.ItemTemplate>
+	  </ItemsControl>
+	  <ItemsControl Name="itemsControl_trackViews" Grid.Column="1">
+		<ItemsControl.ItemTemplate>
+		  <DataTemplate>
+			<v:AnimationModificationTrackView ViewModel="{Binding}" Height="{Binding TrackRowHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=UserControl}}"/>
+		  </DataTemplate>
+		</ItemsControl.ItemTemplate>
+	  </ItemsControl>
+	  <Canvas Grid.Column="1" Name="canvas_frameIndicator" Background="Transparent" IsHitTestVisible="True"/>
+	</Grid>
+  </Grid>
+</UserControl>

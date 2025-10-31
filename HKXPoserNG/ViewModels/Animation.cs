@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive;
 using System.Reflection;
 
 namespace HKXPoserNG.ViewModels;
@@ -56,6 +57,7 @@ public partial class Animation {
         LoadFromHKDump(path_out_hkdump);
         LoadFromHKX2(fileInfo.FullName);
         CurrentFrame = 0;
+        AnimationChanged.Notify(Unit.Default);
     }
 
     private void LoadFromHKDump(string path) {
@@ -154,4 +156,6 @@ public partial class Animation {
             annotations[i].Write(writer);
         }
     }
+
+    public SimpleObservable<Unit> AnimationChanged { get; } = new();
 }

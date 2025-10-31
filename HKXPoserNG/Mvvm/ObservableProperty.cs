@@ -32,3 +32,5 @@ public class ObservableProperty<T> : IReadOnlyObservableProperty<T> {
         return new SimpleDisposable(() => observers.Remove(observer));
     }
 }
+
+public record struct ValueChangedTuple<T>(T OldValue, T NewValue);

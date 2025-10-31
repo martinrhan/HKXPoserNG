@@ -142,7 +142,6 @@ public class D3D11Control : Control, ICustomHitTest {
 
     public ushort GetPixelFromRenderTargetTexture1(int x, int y) {
         var context = DXObjects.D3D11Device.ImmediateContext;
-
         Box box = new Box(x, y, 0, x + 1, y + 1, 1);
         context.CopySubresourceRegion(SinglePixelStagingTexture, 0, 0, 0, 0, RenderTargetTexture1, 0, box);
         MappedSubresource map = context.Map(SinglePixelStagingTexture!, 0, MapMode.Read);

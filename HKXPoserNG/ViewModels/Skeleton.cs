@@ -1,4 +1,4 @@
-using Avalonia;
+ using Avalonia;
 using HKX2;
 using HKXPoserNG.Extensions;
 using HKXPoserNG.Mvvm;
@@ -104,6 +104,10 @@ public partial class Skeleton {
                 UpdateBoneVertexBuffer();
             }
         };
+        Animation.Instance.AnimationChanged.Subscribe(_ => {
+            UpdateBoneGlobalTransforms();
+            UpdateBoneVertexBuffer();
+        });
     }
 
     public string? Name { get; private set; }
@@ -116,16 +120,16 @@ public partial class Skeleton {
     private Dictionary<string, Bone> boneDictionary = new();
     public IReadOnlyDictionary<string, Bone> BoneDictionary => boneDictionary;
 
-    private Transform[]? boneGlobalTransforms;
-    public IReadOnlyList<Transform> BoneGlobalTransforms => boneGlobalTransforms!;
+    private Transform[]? boneGlobalModifiedTransforms;
+    public IReadOnlyList<Transform> BoneGlobalModifiedTransforms => boneGlobalModifiedTransforms!;
 
     private void UpdateBoneGlobalTransforms() {
-        boneGlobalTransforms = new Transform[bones.Length];
+        boneGlobalModifiedTransforms = new Transform[bones.Length];
         void Recursion_UpdateBoneGlobalTransforms(Bone bone) {
             if (bone.Parent == null) {
-                boneGlobalTransforms[bone.Index] = bone.LocalTransform;
+                boneGlobalModifiedTransforms[bone.Index] = bone.LocalModified;
             } else {
-                boneGlobalTransforms[bone.Index] = bone.LocalTransform * boneGlobalTransforms[bone.Parent.Index];
+                boneGlobalModifiedTransforms[bone.Index] = bone.LocalModified * boneGlobalModifiedTransforms[bone.Parent.Index];
             }
             foreach (Bone child in bone.Children) {
                 Recursion_UpdateBoneGlobalTransforms(child);
@@ -141,7 +145,7 @@ public partial class Skeleton {
         Vector3[] result = new Vector3[Bones.Count];
         for (int i = 0; i < Bones.Count; i++) {
             Vector4 vec = new(0, 0, 0, 1);
-            vec = Vector4.Transform(vec, BoneGlobalTransforms[i].Matrix);
+            vec = Vector4.Transform(vec, BoneGlobalModifiedTransforms[i].Matrix);
             result[i] = vec.AsVector3();
         }
         DXObjects.D3D11Device.ImmediateContext.WriteBuffer(BoneVertexBuffer, result);

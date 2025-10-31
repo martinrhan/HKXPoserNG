@@ -11,7 +11,14 @@ namespace HKXPoserNG.Views;
 public partial class MainView : UserControl {
     public MainView() {
         MenuViewModel.OpenFileDialogFunc = () => {
-            var task_openFile = TopLevel.GetTopLevel(this)!.StorageProvider.OpenFilePickerAsync(new() );
+            var options = new FilePickerOpenOptions {
+                Title = "Open HKX file",
+                FileTypeFilter = [
+                    new FilePickerFileType("HKX") { Patterns = ["*.hkx"] }
+                ],
+                AllowMultiple = false
+            };
+            var task_openFile = TopLevel.GetTopLevel(this)!.StorageProvider.OpenFilePickerAsync(options);
             return task_openFile.ContinueWith(t => Continuation(t.Result.FirstOrDefault()));
             FileInfo? Continuation(IStorageFile? file) {
                 if (file is null) return null;
@@ -19,7 +26,7 @@ public partial class MainView : UserControl {
                 if (path is null)
                     throw new InvalidOperationException("Failed to get local path from storage file.");
                 return new FileInfo(path);
-            } 
+            }
         };
         DataContext = MainViewModel.Instance;
         InitializeComponent();

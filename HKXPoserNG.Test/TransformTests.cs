@@ -1,10 +1,11 @@
 using HKXPoserNG.Extensions;
 using System.Numerics;
+using HKXPoserNG.ViewModels;
 
 namespace HKXPoserNG.Test;
 
 [TestClass]
-public sealed class TransformTest {
+public sealed class TransformTests {
 
     [TestMethod]
     public void TestMultiply() {

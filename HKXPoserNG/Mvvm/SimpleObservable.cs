@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace HKXPoserNG.Mvvm;
 
 public class SimpleObservable<T> : IObservable<T> {
-    private List<IObserver<T>> observers = new ();
+    private List<IObserver<T>> observers = new();
 
     public IDisposable Subscribe(IObserver<T> observer) {
         observers.Add(observer);

@@ -6,6 +6,7 @@ namespace HKXPoserNG.ViewModels;
 public class Pose {
     public Pose() {
         transforms = [];
+        floats = [];
     }
     public Pose(float time, Transform[] transforms, float[] floats) {
         this.Time = time;
@@ -46,4 +47,6 @@ public class Pose {
             writer.Write(this.floats[i]);
         }
     }
+
+
 }

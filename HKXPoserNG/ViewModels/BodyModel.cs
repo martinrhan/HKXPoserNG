@@ -156,7 +156,6 @@ public class Mesh {
 
 public class PartitionMesh {
     public PartitionMesh(Mesh mesh, int partitionIndex) {
-
         SkinPartition skinPartition = mesh.NiSkinPartition.Partitions[partitionIndex];
 
         boneMap = skinPartition.Bones.ToArray();

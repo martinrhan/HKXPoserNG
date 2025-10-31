@@ -160,7 +160,7 @@ public class D3D11View : D3D11Control {
                         int i_bone_mesh = partition.BoneMap[i];
                         int i_bone_global = mesh.BoneMap[i_bone_mesh];
                         Bone bone = Skeleton.Instance.Bones[i_bone_global];
-                        Transform transform = mesh.BoneInverseTransforms[i_bone_mesh] * bone.GlobalTransform;
+                        Transform transform = mesh.BoneInverseTransforms[i_bone_mesh] * bone.GlobalModified;
                         array_boneMatrices[i] = transform.Matrix;
                     }
                     context.WriteBuffer(cb_boneMatrices, array_boneMatrices);
@@ -334,9 +334,11 @@ public class D3D11View : D3D11Control {
             if (pointerPressedStopWatch.ElapsedMilliseconds < 500) {
                 Point p = e.GetPosition(this);
                 PixelPoint pp = PixelPoint.FromPoint(p, VisualRoot!.RenderScaling);
-                ushort index = GetPixelFromRenderTargetTexture1(pp.X, pp.Y);
-                if (index != 0) {
-                    Skeleton.Instance.SelectedBone = Skeleton.Instance.Bones[index];
+                if (new PixelRect(0, 0, TextureWidth, TextureHeight).Contains(pp)) {
+                    ushort index = GetPixelFromRenderTargetTexture1(pp.X, pp.Y);
+                    if (index != 0) {
+                        Skeleton.Instance.SelectedBone = Skeleton.Instance.Bones[index];
+                    }
                 }
             }
             pointerPressedStopWatch.Stop();

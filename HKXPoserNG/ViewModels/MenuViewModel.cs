@@ -2,12 +2,10 @@ using Avalonia.Input;
 using Avalonia.Threading;
 using HKXPoserNG.Extensions;
 using HKXPoserNG.Mvvm;
-using Material.Icons.Avalonia;
 using SingletonSourceGenerator.Attributes;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using Material.Icons;
 
 namespace HKXPoserNG.ViewModels;
@@ -52,12 +50,4 @@ public partial class MenuViewModel {
             }
         );
     }
-}
-
-public class MenuItemViewModel {
-    public string Header { get; set; } = string.Empty;
-    public MenuItemViewModel[]? Items { get; set; }
-    public ICommand? Command { get; set; }
-    public KeyGesture? HotKey { get; set; }
-    public MaterialIcon? Icon { get; set; }
 }

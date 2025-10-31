@@ -2,14 +2,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="100"
-             x:Class="HKXPoserNG.Views.AnimationView">
+             mc:Ignorable="d" d:DesignWidth="100"
+             x:Class="HKXPoserNG.Views.AnimationController">
   <DockPanel>
 	<UniformGrid Columns="3" VerticalAlignment="Center">
 	  <TextBlock Text="{Binding CurrentFrame}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 	  <Button HotKey="P" Name="button_PlayPause" Command="{Binding TogglePlayCommand}" VerticalAlignment="Center"/>
 	  <TextBlock Text="{Binding CurrentTime, StringFormat={}{0:F2}}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 	</UniformGrid>
-	<Slider Value="{Binding CurrentFrame}" Maximum="{Binding FrameCountMinusOne}" Name="slider" VerticalAlignment="Center"></Slider>
   </DockPanel>
 </UserControl>
