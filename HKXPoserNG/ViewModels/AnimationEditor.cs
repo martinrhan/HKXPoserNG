@@ -29,7 +29,7 @@ public partial class AnimationEditor {
         Animation.Instance.AnimationChanged.Subscribe(_ => MenuItems[0].CanExecute = true);
         Animation.Instance.PropertyChanged += (_, e) => {
             if (e.PropertyName == nameof(Animation.CurrentFrame)) {
-                GetAddKeyFrameMenuItem().CanExecute = CanAddKeyFrame();
+                NotifySelectedKeyFrameChanged();
             }
         };
     }
@@ -63,7 +63,7 @@ public partial class AnimationEditor {
         }
     }
     private void OnSelectedModificationTrackChanged() {
-        GetAddKeyFrameMenuItem().CanExecute = CanAddKeyFrame();
+        NotifySelectedKeyFrameChanged();
         PropertyChanged?.Invoke(this, new(nameof(SelectedModificationTrack)));
     }
 
@@ -82,15 +82,20 @@ public partial class AnimationEditor {
         }
         track.Name = name;
         track.KeyFrames.CollectionChanged += (_, _) => {
-            GetAddKeyFrameMenuItem().CanExecute = CanAddKeyFrame();
-        }; 
+            NotifySelectedKeyFrameChanged();
+        };
         modificationTracks.Add(track);
         SelectedModificationTrack = track;
     });
 
     private SimpleCommand AddKeyFrameCommand => new(() => SelectedModificationTrack!.AddKeyFrame(Animation.Instance.CurrentFrame));
-    private bool CanAddKeyFrame() => SelectedModificationTrack == null ? false : SelectedModificationTrack.KeyFrames.All(kf => kf.FrameIndex != Animation.Instance.CurrentFrame);
+    private bool CanAddKeyFrame() => SelectedKeyFrame == null;
 
+    public AnimationModificationKeyFrame? SelectedKeyFrame => SelectedModificationTrack?.KeyFrames.FirstOrDefault(kf => kf.FrameIndex == Animation.Instance.CurrentFrame);
+    private void NotifySelectedKeyFrameChanged() {
+        GetAddKeyFrameMenuItem().CanExecute = CanAddKeyFrame();
+        PropertyChanged?.Invoke(this, new(nameof(SelectedKeyFrame)));
+    }
 }
 
 public partial class AnimationModificationTrack {
