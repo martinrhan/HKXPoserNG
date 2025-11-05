@@ -11,7 +11,7 @@ using Material.Icons;
 namespace HKXPoserNG.Views;
 
 public static class HelperFunctions {
-    public static void AddCollapsebleControl(this DockPanel panel, Control control, Dock buttonDock) {
+    public static void AddCollapsibleControl(this DockPanel panel, Control control, Dock buttonDock) {
         MaterialIconKind GetMaterialIconKind(Dock dock) =>
             dock switch {
                 Dock.Left => MaterialIconKind.MenuRight,
