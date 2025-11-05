@@ -27,7 +27,7 @@ public partial class AnimationEditorView : UserControl {
             Background = Brushes.Red,
             Width = 1,
             VerticalAlignment = VerticalAlignment.Stretch,
-        };
+        }; 
         canvas_frameIndicator.Children.Add(currentFrameIndicator);
         Animation.Instance.PropertyChanged += (_, e) => {
             if (e.PropertyName == nameof(Animation.CurrentFrame)) {

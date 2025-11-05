@@ -27,4 +27,8 @@ public partial class Bone {
 
     [Notify]
     private bool hide = false;
+
+    public override string ToString() {
+        return Name;
+    }
 }
