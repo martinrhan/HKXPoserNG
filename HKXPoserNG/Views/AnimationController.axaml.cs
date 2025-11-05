@@ -16,7 +16,7 @@ public partial class AnimationController : UserControl {
         MaterialIcon icon = new() {
             Kind = Material.Icons.MaterialIconKind.Play
         };
-        button_PlayPause.Content = icon;
+        button_playPause.Content = icon;
         ViewModels.Animation.Instance.PropertyChanged += (_, e) => {
             if (e.PropertyName == nameof(ViewModels.Animation.IsPlaying)) {
                 if (ViewModels.Animation.Instance.IsPlaying) {

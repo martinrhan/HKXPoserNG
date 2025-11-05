@@ -7,7 +7,7 @@
   <DockPanel>
 	<UniformGrid Columns="3" VerticalAlignment="Center">
 	  <TextBlock Text="{Binding CurrentFrame}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-	  <Button HotKey="P" Name="button_PlayPause" Command="{Binding TogglePlayCommand}" VerticalAlignment="Center"/>
+	  <Button HotKey="P" Name="button_playPause" Command="{Binding TogglePlayCommand}" VerticalAlignment="Center"/>
 	  <TextBlock Text="{Binding CurrentTime, StringFormat={}{0:F2}}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 	</UniformGrid>
   </DockPanel>
