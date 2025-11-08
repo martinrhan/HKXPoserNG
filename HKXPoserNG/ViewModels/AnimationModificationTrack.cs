@@ -12,8 +12,7 @@ public partial class AnimationModificationTrack {
     [Notify]
     private bool isSelected = false;
 
-    private AvaloniaList<Bone> affectedBones = new();
-    public IAvaloniaReadOnlyList<Bone> AffectedBones => affectedBones;
+    public AvaloniaList<Bone> AffectedBones { get; } = new();
 
     private AvaloniaList<AnimationModificationKeyFrame> keyFrames = new();
     public IAvaloniaReadOnlyList<AnimationModificationKeyFrame> KeyFrames => keyFrames;
@@ -25,7 +24,7 @@ public partial class AnimationModificationTrack {
         var keyFrame = new AnimationModificationKeyFrame {
             FrameIndex = frameIndex
         };
-        keyFrame.Transforms.AddRange(Enumerable.Repeat(Transform.Identity, affectedBones.Count));
+        keyFrame.Transforms.AddRange(Enumerable.Repeat(Transform.Identity, AffectedBones.Count));
         keyFrames.Add(keyFrame);
     }
 }

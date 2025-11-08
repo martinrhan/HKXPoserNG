@@ -15,7 +15,7 @@ using Avalonia.Media;
 using Avalonia.Data;
 using System.Reactive.Linq;
 using Avalonia.Data.Converters;
-using HKXPoserNG.Mvvm;
+using HKXPoserNG.Reactive;
 
 namespace HKXPoserNG.Controls;
 

@@ -1,23 +1,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HKXPoserNG.Mvvm;
+namespace HKXPoserNG.Reactive;
 
 public interface IReadOnlyObservableProperty<T> : IObservable<T> {
     T Value { get; }
 }
 
 public class ObservableProperty<T> : IReadOnlyObservableProperty<T> {
-    public ObservableProperty(T value = default) {
+    public ObservableProperty(T value) {
         Value = value;
     }
     public T Value {
         get => field;
         set {
-            if (object.Equals(field, value))
+            if (Equals(field, value))
                 return;
             field = value;
             foreach (var observer in observers.ToArray())
@@ -29,7 +30,7 @@ public class ObservableProperty<T> : IReadOnlyObservableProperty<T> {
     public IDisposable Subscribe(IObserver<T> observer) {
         observers.Add(observer);
         observer.OnNext(Value);
-        return new SimpleDisposable(() => observers.Remove(observer));
+        return Disposable.Create(() => observers.Remove(observer));
     }
 }
 

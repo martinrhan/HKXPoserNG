@@ -39,9 +39,8 @@ public partial class AnimationEditor {
     public Transform GetCurrentBoneLocalModification(int index) {
         return GetBoneLocalModification(Animation.Instance.CurrentFrame, index);
     }
+    public void SetBoneLocalModification(AnimationModificationKeyFrame keyFrame, int index, Transform value) {
 
-    internal bool IsBoneCurrentlyModifiable(int index) {
-        return true;
     }
 
     internal void SetCurrentBoneLocalModification(int index, Transform value) {

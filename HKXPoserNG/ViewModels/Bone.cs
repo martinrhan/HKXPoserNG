@@ -18,9 +18,7 @@ public partial class Bone {
     public Transform LocalModification {
         get => AnimationEditor.Instance.GetCurrentBoneLocalModification(Index);
         set => AnimationEditor.Instance.SetCurrentBoneLocalModification(Index, value);
-    }
-    public bool IsCurrentlyModifiable => AnimationEditor.Instance.IsBoneCurrentlyModifiable(Index);
-    
+    }    
 
     public Transform LocalModified => LocalModification * LocalOriginal;
     public Transform GlobalModified => Skeleton.Instance.BoneGlobalModifiedTransforms.GetOrDefault(Index, Transform.Identity);

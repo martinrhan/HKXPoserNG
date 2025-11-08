@@ -1,6 +1,7 @@
 using HKX2;
 using HKXPoserNG.Extensions;
 using HKXPoserNG.Mvvm;
+using HKXPoserNG.Reactive;
 using PropertyChanged.SourceGenerator;
 using SingletonSourceGenerator.Attributes;
 using System;

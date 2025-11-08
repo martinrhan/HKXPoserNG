@@ -1,14 +1,16 @@
+using HKXPoserNG.Mvvm;
 using System;
 using System.Collections.Generic;
+using System.Reactive.Disposables;
 
-namespace HKXPoserNG.Mvvm;
+namespace HKXPoserNG.Reactive;
 
 public class SimpleObservable<T> : IObservable<T> {
     private List<IObserver<T>> observers = new();
 
     public IDisposable Subscribe(IObserver<T> observer) {
         observers.Add(observer);
-        return new SimpleDisposable(() => observers.Remove(observer));
+        return Disposable.Create(() => observers.Remove(observer));
     }
 
     public void Notify(T value) {
@@ -17,3 +19,4 @@ public class SimpleObservable<T> : IObservable<T> {
         }
     }
 }
+

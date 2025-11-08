@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using DependencyPropertyGenerator;
 using HKXPoserNG.Controls;
+using HKXPoserNG.Reactive;
+using System;
 using System.Numerics;
 
 namespace HKXPoserNG;
@@ -35,5 +37,9 @@ public partial class Vector3Editor : UserControl {
         numberBoxX.Number = newValue.X;
         numberBoxY.Number = newValue.Y;
         numberBoxZ.Number = newValue.Z;
+        vectorChanged.Notify(newValue);
     }
+
+    private SimpleObservable<Vector3> vectorChanged = new ();
+    public IObservable<Vector3> VectorChanged => vectorChanged;
 }
