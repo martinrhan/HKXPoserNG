@@ -26,8 +26,8 @@ public partial class AnimationModificationTrackView : Canvas {
         if (oldValue != null)
             ClearSubscriptions(oldValue);
         if (ViewModel == null) return;
-        ViewModel.KeyFrames.CollectionChanged += KeyFrame_CollectionChanged;
-        KeyFrame_CollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        ViewModel.KeyFrames.CollectionChanged += KeyFrames_CollectionChanged;
+        KeyFrames_CollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
         ViewModel_PropertyChanged(this, new PropertyChangedEventArgs(nameof(AnimationModificationTrack.IsSelected)));
     }
@@ -39,7 +39,7 @@ public partial class AnimationModificationTrackView : Canvas {
         }
     }
 
-    private void KeyFrame_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) {
+    private void KeyFrames_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) {
         void AddFrameIndicator(AnimationModificationKeyFrame frame) {
             var indicator = new Panel {
                 DataContext = frame,
@@ -91,7 +91,7 @@ public partial class AnimationModificationTrackView : Canvas {
     }
 
     private void ClearSubscriptions(AnimationModificationTrack oldValue) {
-        oldValue.KeyFrames.CollectionChanged -= KeyFrame_CollectionChanged;
+        oldValue.KeyFrames.CollectionChanged -= KeyFrames_CollectionChanged;
         oldValue.PropertyChanged -= ViewModel_PropertyChanged;
     }
 
