@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -7,6 +8,7 @@ using DependencyPropertyGenerator;
 using HKXPoserNG.Mvvm;
 using HKXPoserNG.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -40,37 +42,35 @@ public partial class AnimationModificationTrackView : Canvas {
     }
 
     private void KeyFrames_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) {
-        void AddFrameIndicator(AnimationModificationKeyFrame frame) {
+        void AddFrameIndicator(int frameIndex) {
             var indicator = new Panel {
-                DataContext = frame,
+                DataContext = frameIndex,
                 Background = Brushes.Black,
                 Width = 1,
                 Height = this.Bounds.Height,
-                [Canvas.LeftProperty] = GetLeftForFrameIndex(frame.FrameIndex)
+                [Canvas.LeftProperty] = GetLeftForFrameIndex(frameIndex)
             };
             Children.Add(indicator);
         }
-        void RemoveFrameIndicator(AnimationModificationKeyFrame frame) {
-            var toRemove = Children.FirstOrDefault(c => c.DataContext == frame);
-            if (toRemove != null) {
-                Children.Remove(toRemove);
-            }
+        void RemoveFrameIndicator(int frameIndex) {
+            var toRemove = Children.First(c => (int)c.DataContext! == frameIndex);
+            Children.Remove(toRemove);
         }
 
         switch (e.Action) {
             case NotifyCollectionChangedAction.Add:
                 foreach (var newItem in e.NewItems!)
-                    AddFrameIndicator((AnimationModificationKeyFrame)newItem);
+                    AddFrameIndicator((int)newItem);
                 break;
             case NotifyCollectionChangedAction.Remove:
                 foreach (var oldItem in e.OldItems!)
-                    RemoveFrameIndicator((AnimationModificationKeyFrame)oldItem);
+                    RemoveFrameIndicator((int)oldItem);
                 break;
             case NotifyCollectionChangedAction.Replace:
                 foreach (var newItem in e.NewItems!)
-                    AddFrameIndicator((AnimationModificationKeyFrame)newItem);
+                    AddFrameIndicator((int)newItem);
                 foreach (var oldItem in e.OldItems!)
-                    RemoveFrameIndicator((AnimationModificationKeyFrame)oldItem);
+                    RemoveFrameIndicator((int)oldItem);
                 break;
             case NotifyCollectionChangedAction.Reset:
                 Children.Clear();
@@ -97,7 +97,7 @@ public partial class AnimationModificationTrackView : Canvas {
 
     protected override void OnSizeChanged(SizeChangedEventArgs e) {
         foreach (var child in Children) {
-            child[Canvas.LeftProperty] = GetLeftForFrameIndex(((AnimationModificationKeyFrame)child.DataContext!).FrameIndex);
+            child[Canvas.LeftProperty] = GetLeftForFrameIndex((int)child.DataContext!);
             child.Height = this.Bounds.Height;
         }
     }

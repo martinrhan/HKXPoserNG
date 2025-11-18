@@ -34,6 +34,11 @@ public partial class BoneView : UserControl {
                 UpdateControlValues();
             }
         };
+        Animation.Instance.PropertyChanged += (_, e) => {
+            if (e.PropertyName == nameof(Animation.CurrentFrame)) {
+                UpdateControlValues();
+            }
+        };
         this.DataContext = Skeleton.Instance.SelectedBone;
         InitializeComponent();
 
@@ -78,15 +83,15 @@ public partial class BoneView : UserControl {
                 grid.Children.Add(vector3Displayer);
             } else {
                 IObservable<bool> observable_hasKeyFrame =
-                    AnimationEditor.Instance.GetPropertyObservable(nameof(AnimationEditor.SelectedKeyFrame), ae => ae.SelectedKeyFrame != null);
+                    AnimationEditor.Instance.GetPropertyObservable(nameof(AnimationEditor.SelectedKeyFrame), ae => ae.SelectedKeyFrame != -1);
                 IObservable<Bone?> observable_selectedBone = 
                     Skeleton.Instance.GetPropertyObservable(nameof(Skeleton.SelectedBone), s => s.SelectedBone);
                 IObservable<AnimationModificationTrack?> observable_selectedModificationTrack = 
                     AnimationEditor.Instance.GetPropertyObservable(nameof(AnimationEditor.SelectedModificationTrack), ae => ae.SelectedModificationTrack);
-                IObservable<AvaloniaList<Bone>?> observable_affectedBones = 
+                IObservable<IAvaloniaReadOnlyList<Bone>?> observable_affectedBones = 
                     observable_selectedModificationTrack.Select(smt => smt?.AffectedBones);
                 IObservable<NotifyCollectionChangedEventArgs?> observable_collectionChanged = observable_selectedModificationTrack.
-                    Select(smt => smt?.AffectedBones.GetObservable().
+                    Select(smt => smt?.AffectedBones.GetCollectionChangedObservable().
                     Select(ep => ep.EventArgs) ?? Observable.Return<NotifyCollectionChangedEventArgs?>(null)).
                     Switch();
                 IObservable<bool> observable_isAffected = Observable.CombineLatest(

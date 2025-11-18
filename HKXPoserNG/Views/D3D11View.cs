@@ -33,7 +33,7 @@ public class D3D11View : D3D11Control {
                 needRedraw = true;
             }
         };
-        Animation.Instance.AnimationChanged.Subscribe(_ => needRedraw = true);
+        Animation.Instance.AnimationChangedObservable.Subscribe(_ => needRedraw = true);
 
         ID3D11DeviceContext context = DXObjects.D3D11Device.ImmediateContext;
 

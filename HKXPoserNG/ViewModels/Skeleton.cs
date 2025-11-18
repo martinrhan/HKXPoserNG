@@ -104,7 +104,7 @@ public partial class Skeleton {
                 UpdateBoneVertexBuffer();
             }
         };
-        Animation.Instance.AnimationChanged.Subscribe(_ => {
+        Animation.Instance.AnimationChangedObservable.Subscribe(_ => {
             UpdateBoneGlobalTransforms();
             UpdateBoneVertexBuffer();
         });

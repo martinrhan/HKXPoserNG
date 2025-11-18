@@ -58,7 +58,7 @@ public partial class Animation {
         LoadFromHKDump(path_out_hkdump);
         LoadFromHKX2(fileInfo.FullName);
         CurrentFrame = 0;
-        AnimationChanged.Notify(Unit.Default);
+        AnimationChangedObservable.Notify(Unit.Default);
     }
 
     private void LoadFromHKDump(string path) {
@@ -158,5 +158,5 @@ public partial class Animation {
         }
     }
 
-    public SimpleObservable<Unit> AnimationChanged { get; } = new();
+    public SimpleObservable<Unit> AnimationChangedObservable { get; } = new();
 }
