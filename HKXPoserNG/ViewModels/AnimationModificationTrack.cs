@@ -47,12 +47,14 @@ public partial class AnimationModificationTrack : IDisposable {
         }
         return true;
     }
-
     public void AddKeyFrame(int frameIndex) {
         int i_insert = Enumerable.Range(0, keyFrames.Count).FirstOrDefault(i => frameIndex < keyFrames[i]);
         keyFrames.Insert(i_insert, frameIndex);
         List<Transform> list = [.. Enumerable.Repeat(Transform.Identity, AffectedBones.Count)];
         transforms.Insert(i_insert, list);
+    }
+    public void RemoveKeyFrame(int frameIndex) {
+        if (!keyFrames.Remove(frameIndex)) throw new InvalidOperationException();
     }
 
     private IDisposable subscription;

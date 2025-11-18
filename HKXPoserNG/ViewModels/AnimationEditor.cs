@@ -36,6 +36,10 @@ public partial class AnimationEditor {
                 Header = "Add Key Frame",
                 Command = AddKeyFrameCommand,
             },
+            new(this.GetPropertyObservable(nameof(SelectedKeyFrame), ae => ae.SelectedKeyFrame != -1)){
+                Header = "Remove Key Frame",
+                Command= RemoveKeyFrameCommand,
+            }
         ];
     }
     public Transform GetBoneLocalModification(int frame, int index) {
@@ -82,6 +86,7 @@ public partial class AnimationEditor {
         SelectedModificationTrack = modificationTracks.FirstOrDefault();
     });
     private SimpleCommand AddKeyFrameCommand => new(() => SelectedModificationTrack!.AddKeyFrame(Animation.Instance.CurrentFrame));
+    private SimpleCommand RemoveKeyFrameCommand => new(() => SelectedModificationTrack!.RemoveKeyFrame(Animation.Instance.CurrentFrame));
 
     public int SelectedKeyFrame { get; private set; }
     private IObservable<int> GetObservable_SelectedKeyFrameIndex() {
