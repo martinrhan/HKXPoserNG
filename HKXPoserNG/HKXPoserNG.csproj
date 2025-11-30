@@ -3,7 +3,7 @@
 	<OutputType>WinExe</OutputType>
 	<TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <LangVersion>preview</LangVersion>
+    <LangVersion>latest</LangVersion>
 	<ApplicationManifest>app.manifest</ApplicationManifest>
 	<Version>0.2</Version>
 	<DefineConstants>$(DefineConstants);HAS_AVALONIA</DefineConstants>
@@ -41,10 +41,7 @@
 	<None Update="**\*.hlsl">
 	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</None>
-	<Compile Update="Views\AnimationController.axaml.cs">
-	  <DependentUpon>AnimationController.axaml</DependentUpon>
-	</Compile>
-	<None Update="win32.hko">
+	<None Update="win32.hko"> 
 	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</None>
   </ItemGroup>
