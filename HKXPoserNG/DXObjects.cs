@@ -19,7 +19,7 @@ public static class DXObjects {
             new(-1, -1),
             new(-1, 1),
             new(1, -1),
-            new(1f, 1f)
+            new(1, 1)
         },
         BindFlags.VertexBuffer,
         ResourceUsage.Immutable
