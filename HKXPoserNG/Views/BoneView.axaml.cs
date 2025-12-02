@@ -83,7 +83,7 @@ public partial class BoneView : UserControl {
                 grid.Children.Add(vector3Displayer);
             } else {
                 IObservable<bool> observable_hasKeyFrame =
-                    AnimationEditor.Instance.GetPropertyObservable(nameof(AnimationEditor.SelectedKeyFrame), ae => ae.SelectedKeyFrame != -1);
+                    AnimationEditor.Instance.GetPropertyObservable(nameof(AnimationEditor.SelectedKeyFrame), ae => ae.SelectedKeyFrame != null);
                 IObservable<Bone?> observable_selectedBone = 
                     Skeleton.Instance.GetPropertyObservable(nameof(Skeleton.SelectedBone), s => s.SelectedBone);
                 IObservable<AnimationModificationTrack?> observable_selectedModificationTrack = 

@@ -42,35 +42,35 @@ public partial class AnimationModificationTrackView : Canvas {
     }
 
     private void KeyFrames_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) {
-        void AddFrameIndicator(int frameIndex) {
+        void AddFrameIndicator(IKeyFrame keyFrame) {
             var indicator = new Panel {
-                DataContext = frameIndex,
+                DataContext = keyFrame,
                 Background = Brushes.Black,
                 Width = 1,
                 Height = this.Bounds.Height,
-                [Canvas.LeftProperty] = GetLeftForFrameIndex(frameIndex)
+                [Canvas.LeftProperty] = GetLeftFromFrame(keyFrame.Frame)
             };
             Children.Add(indicator);
         }
-        void RemoveFrameIndicator(int frameIndex) {
-            var toRemove = Children.First(c => (int)c.DataContext! == frameIndex);
+        void RemoveFrameIndicator(IKeyFrame keyFrame) {
+            var toRemove = Children.First(c => (IKeyFrame)c.DataContext! == keyFrame);
             Children.Remove(toRemove);
         }
 
         switch (e.Action) {
             case NotifyCollectionChangedAction.Add:
                 foreach (var newItem in e.NewItems!)
-                    AddFrameIndicator((int)newItem);
+                    AddFrameIndicator((IKeyFrame)newItem);
                 break;
             case NotifyCollectionChangedAction.Remove:
                 foreach (var oldItem in e.OldItems!)
-                    RemoveFrameIndicator((int)oldItem);
+                    RemoveFrameIndicator((IKeyFrame)oldItem);
                 break;
             case NotifyCollectionChangedAction.Replace:
                 foreach (var newItem in e.NewItems!)
-                    AddFrameIndicator((int)newItem);
+                    AddFrameIndicator((IKeyFrame)newItem);
                 foreach (var oldItem in e.OldItems!)
-                    RemoveFrameIndicator((int)oldItem);
+                    RemoveFrameIndicator((IKeyFrame)oldItem);
                 break;
             case NotifyCollectionChangedAction.Reset:
                 Children.Clear();
@@ -81,8 +81,8 @@ public partial class AnimationModificationTrackView : Canvas {
     }
 
     private int MaxFrameIndex => Animation.Instance.FrameCount - 1;
-    public double GetLeftForFrameIndex(int frameIndex) {
-        return frameIndex / (double)MaxFrameIndex * this.Bounds.Width;
+    public double GetLeftFromFrame(int frame) {
+        return frame / (double)MaxFrameIndex * this.Bounds.Width;
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) {
@@ -97,7 +97,7 @@ public partial class AnimationModificationTrackView : Canvas {
 
     protected override void OnSizeChanged(SizeChangedEventArgs e) {
         foreach (var child in Children) {
-            child[Canvas.LeftProperty] = GetLeftForFrameIndex((int)child.DataContext!);
+            child[Canvas.LeftProperty] = GetLeftFromFrame(((IKeyFrame)child.DataContext!).Frame);
             child.Height = this.Bounds.Height;
         }
     }
