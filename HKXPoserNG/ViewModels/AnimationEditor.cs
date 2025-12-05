@@ -1,5 +1,6 @@
 using Avalonia.Collections;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using HKXPoserNG.Mvvm;
 using HKXPoserNG.Reactive;
 using PropertyChanged.SourceGenerator;
@@ -22,10 +23,12 @@ public partial class AnimationEditor {
             new(Animation.Instance.AnimationChangedObservable.Select(u => true)) {
                 Header = "Add Modification Track",
                 Command = AddModificationTrackCommand,
+                HotKey = new KeyGesture(Key.D1)
             },
             new(observable_hasSelecetedModificationTrack){
                 Header = "Remove Modification Track",
-                Command = RemoveModificationTrackCommand
+                Command = RemoveModificationTrackCommand,
+                HotKey = new KeyGesture(Key.D2)
             },
             new(
                 Observable.CombineLatest(
@@ -36,10 +39,12 @@ public partial class AnimationEditor {
             ){
                 Header = "Add Key Frame",
                 Command = AddKeyFrameCommand,
+                HotKey = new KeyGesture(Key.D3)
             },
             new(this.GetPropertyObservable(nameof(SelectedKeyFrame), ae => ae.SelectedKeyFrame != null)){
                 Header = "Remove Key Frame",
                 Command= RemoveKeyFrameCommand,
+                HotKey = new KeyGesture(Key.D4)
             },
             new(
                 this.GetPropertyObservable(
@@ -52,6 +57,7 @@ public partial class AnimationEditor {
             ){
                 Header = "Add Interpolation",
                 Command = AddInterpolationCommand,
+                HotKey = new KeyGesture(Key.D5)
             },
             new(
                 this.GetPropertyObservable(
@@ -64,6 +70,7 @@ public partial class AnimationEditor {
             ){
                 Header = "Remove Interpolation",
                 Command = RemoveInterpolationCommand,
+                HotKey = new KeyGesture(Key.D6)
             }
         ];
     }
