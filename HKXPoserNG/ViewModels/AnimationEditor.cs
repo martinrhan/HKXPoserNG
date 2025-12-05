@@ -40,18 +40,30 @@ public partial class AnimationEditor {
             new(this.GetPropertyObservable(nameof(SelectedKeyFrame), ae => ae.SelectedKeyFrame != null)){
                 Header = "Remove Key Frame",
                 Command= RemoveKeyFrameCommand,
-            }, 
+            },
             new(
                 this.GetPropertyObservable(
-                    nameof(SelectedKeyFrameInterval), 
+                    nameof(SelectedKeyFrameInterval),
                     ae => ae.SelectedKeyFrameInterval?.GetPropertyObservable(
-                            nameof(IKeyFrameInterval.InterpolationFunction), 
+                            nameof(IKeyFrameInterval.InterpolationFunction),
                             kfi => kfi.InterpolationFunction == null
                         ) ?? Observable.Return(false)
                 ).Switch()
             ){
                 Header = "Add Interpolation",
                 Command = AddInterpolationCommand,
+            },
+            new(
+                this.GetPropertyObservable(
+                    nameof(SelectedKeyFrameInterval),
+                    ae => ae.SelectedKeyFrameInterval?.GetPropertyObservable(
+                            nameof(IKeyFrameInterval.InterpolationFunction),
+                            kfi => kfi.InterpolationFunction != null
+                        ) ?? Observable.Return(false)
+                ).Switch()
+            ){
+                Header = "Remove Interpolation",
+                Command = RemoveInterpolationCommand,
             }
         ];
     }
@@ -105,9 +117,8 @@ public partial class AnimationEditor {
     });
     private SimpleCommand AddKeyFrameCommand => field ??= new(() => SelectedModificationTrack!.AddKeyFrame(Animation.Instance.CurrentFrame));
     private SimpleCommand RemoveKeyFrameCommand => field ??= new(() => SelectedModificationTrack!.RemoveKeyFrame(Animation.Instance.CurrentFrame));
-    private SimpleCommand AddInterpolationCommand => field ??= new(() => {
-        SelectedKeyFrameInterval?.InterpolationFunction = KeyFrameIntervalInterpolationFunctions.Linear;
-    });
+    private SimpleCommand AddInterpolationCommand => field ??= new(() => SelectedKeyFrameInterval?.InterpolationFunction = KeyFrameIntervalInterpolationFunctions.Linear);
+    private SimpleCommand RemoveInterpolationCommand => field ??= new(() => SelectedKeyFrameInterval?.InterpolationFunction = null);
 
     private IObservable<AnimationModificationTrack?> observable_selectedModificationTrack =>
         field ??= this.GetPropertyObservable(nameof(SelectedModificationTrack), ae => ae.SelectedModificationTrack);
@@ -132,7 +143,7 @@ public partial class AnimationEditor {
         PropertyChanged?.Invoke(this, new(nameof(SelectedKeyFrame)));
     }
 
-    public IKeyFrameInterval? SelectedKeyFrameInterval { get; private set; } = null;  
+    public IKeyFrameInterval? SelectedKeyFrameInterval { get; private set; } = null;
     private IObservable<IKeyFrameInterval?> GetObservable_SelectedInterpolationInterval() {
         return Observable.CombineLatest(
             observable_currentFrame,
