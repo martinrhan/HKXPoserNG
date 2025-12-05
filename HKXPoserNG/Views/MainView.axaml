@@ -19,8 +19,7 @@
 	</Style>
   </Control.Styles>
   <Grid ColumnDefinitions="*, auto, auto" RowDefinitions="auto, *, auto, 200">
-	<Menu Name="menu" Grid.Row="0" Grid.ColumnSpan="2" DataContext="{x:Static vm:MenuViewModel.Instance}" ItemsSource="{Binding Items}">
-	</Menu>
+	<Menu Name="menu" Grid.Row="0" Grid.ColumnSpan="2" DataContext="{x:Static vm:MenuViewModel.Instance}" ItemsSource="{Binding Items}"/>
 	<GridSplitter Grid.Column="1" Grid.RowSpan="4" Width="5"/>
 	<v:SkeletonView Grid.Column="2" Grid.RowSpan="4"/>
 	<v:D3D11View Grid.Row="1" ZIndex="-1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
