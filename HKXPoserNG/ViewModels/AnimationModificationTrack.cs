@@ -99,6 +99,11 @@ public partial class AnimationModificationTrack : IDisposable {
         if (i_interval == -1) return null;
         return keyFrameIntervals[i_interval];
     }
+    public (IKeyFrame, IKeyFrame) GetKeyFramesBesideInterval(IKeyFrameInterval interval) {
+        int i_interval = keyFrameIntervals.IndexOf((KeyFrameInterval)interval);
+        return (keyFrames[i_interval], keyFrames[i_interval + 1]);
+    }
+
     public void SetTransform(IKeyFrame keyFrame, Bone bone, Transform value) {
         SetTransform(keyFrame, affectedBones.IndexOf(bone), value);
     }

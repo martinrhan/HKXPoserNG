@@ -1,18 +1,14 @@
 using Avalonia;
-using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Input;
-using Avalonia.Layout;
 using Avalonia.Media;
 using DependencyPropertyGenerator;
-using HKXPoserNG.Mvvm;
-using HKXPoserNG.ViewModels;
 using System;
-using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
+using HKXPoserNG.Reactive;
+using HKXPoserNG.ViewModels;
+using Transform = HKXPoserNG.ViewModels.Transform;
+using System.Runtime.CompilerServices;
 
 namespace HKXPoserNG.Views;
 
@@ -24,60 +20,72 @@ public partial class AnimationModificationTrackView : Canvas {
         Background = Brushes.White;
     }
 
+    private Action? unsubscribe;
     partial void OnViewModelChanged(AnimationModificationTrack? oldValue, AnimationModificationTrack? newValue) {
-        if (oldValue != null)
-            ClearSubscriptions(oldValue);
+        unsubscribe?.Invoke();
         if (ViewModel == null) return;
-        ViewModel.KeyFrames.CollectionChanged += KeyFrames_CollectionChanged;
-        KeyFrames_CollectionChanged(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-        ViewModel_PropertyChanged(this, new PropertyChangedEventArgs(nameof(AnimationModificationTrack.IsSelected)));
+        var subscription0 = ViewModel.
+            GetPropertyObservable(nameof(AnimationModificationTrack.IsSelected), amt => amt.IsSelected).
+            Subscribe(b => this.Background = b ? Brushes.LightBlue : Brushes.White);
+        var subscription1 = ViewModel.
+            KeyFrames.GetCollectionChangedObservable().
+            Subscribe(ep => KeyFrames_CollectionChanged(ep.EventArgs));
+        var subscription2 = ViewModel.
+             KeyFrameIntervals.GetItemsObservable(
+                 interval => interval.GetPropertyObservable(nameof(IKeyFrameInterval.InterpolationFunction), kf => kf.InterpolationFunction)
+             ).
+             Subscribe(t => KeyFrameIntervals_ItemInterpolationFunctionChanged(t.Item1, t.Item2));
+        unsubscribe = () => {
+            subscription0.Dispose();
+            subscription1.Dispose();
+            subscription2.Dispose();
+        };
     }
 
-    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e) {
-        if (e.PropertyName == nameof(AnimationModificationTrack.IsSelected)) {
-            if (ViewModel == null) return;
-            this.Background = ViewModel.IsSelected ? Brushes.LightBlue : Brushes.White;
-        }
+    private void SetKeyFrameIndicatorShape(Panel indicator, IKeyFrame keyFrame) {
+        indicator.Height = this.Bounds.Height;
+        indicator[Canvas.LeftProperty] = GetLeftFromFrame(keyFrame.Frame);
     }
-
-    private void KeyFrames_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) {
+    private void KeyFrames_CollectionChanged(NotifyCollectionChangedEventArgs e) {
         void AddFrameIndicator(IKeyFrame keyFrame) {
-            var indicator = new Panel {
+            Panel indicator = new() {
                 DataContext = keyFrame,
                 Background = Brushes.Black,
                 Width = 1,
-                Height = this.Bounds.Height,
-                [Canvas.LeftProperty] = GetLeftFromFrame(keyFrame.Frame)
             };
+            SetKeyFrameIndicatorShape(indicator, keyFrame);
             Children.Add(indicator);
         }
         void RemoveFrameIndicator(IKeyFrame keyFrame) {
-            var toRemove = Children.First(c => (IKeyFrame)c.DataContext! == keyFrame);
+            var toRemove = Children.First(c => c.DataContext == keyFrame);
             Children.Remove(toRemove);
         }
+        if (e.OldItems != null) foreach (IKeyFrame oldItem in e.OldItems) RemoveFrameIndicator(oldItem);
+        if (e.NewItems != null) foreach (IKeyFrame newItem in e.NewItems) AddFrameIndicator(newItem);
+    }
 
-        switch (e.Action) {
-            case NotifyCollectionChangedAction.Add:
-                foreach (var newItem in e.NewItems!)
-                    AddFrameIndicator((IKeyFrame)newItem);
-                break;
-            case NotifyCollectionChangedAction.Remove:
-                foreach (var oldItem in e.OldItems!)
-                    RemoveFrameIndicator((IKeyFrame)oldItem);
-                break;
-            case NotifyCollectionChangedAction.Replace:
-                foreach (var newItem in e.NewItems!)
-                    AddFrameIndicator((IKeyFrame)newItem);
-                foreach (var oldItem in e.OldItems!)
-                    RemoveFrameIndicator((IKeyFrame)oldItem);
-                break;
-            case NotifyCollectionChangedAction.Reset:
-                Children.Clear();
-                foreach (var frame in ViewModel!.KeyFrames)
-                    AddFrameIndicator(frame);
-                break;
+    private void SetKeyFrameIntervalIndicatorShape(Panel indicator, IKeyFrameInterval interval) {
+        (IKeyFrame kf0, IKeyFrame kf1) = ViewModel!.GetKeyFramesBesideInterval(interval);
+        indicator.Width = GetLeftFromFrame(kf1.Frame - kf0.Frame);
+        indicator[Canvas.LeftProperty] = GetLeftFromFrame(kf0.Frame);
+        indicator[Canvas.TopProperty] = this.Bounds.Height / 2;
+    }
+    private void KeyFrameIntervals_ItemInterpolationFunctionChanged(IKeyFrameInterval interval, Func<Transform, Transform, float, Transform>? newInterpolationFunction) {
+        void AddIntervalIndicator(IKeyFrameInterval interval) {
+            Panel indicator = new() {
+                DataContext = interval,
+                Background = Brushes.Black,
+                Height = 1,
+            };
+            SetKeyFrameIntervalIndicatorShape(indicator, interval);
+            Children.Add(indicator);
         }
+        void RemoveFrameIndicator(IKeyFrameInterval interval) {
+            Control? toRemove = Children.FirstOrDefault(c => c.DataContext == interval);
+            if (toRemove != null) Children.Remove(toRemove);
+        }
+        if (newInterpolationFunction == null) RemoveFrameIndicator(interval);
+        else AddIntervalIndicator(interval);
     }
 
     private int MaxFrameIndex => Animation.Instance.FrameCount - 1;
@@ -86,19 +94,21 @@ public partial class AnimationModificationTrackView : Canvas {
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) {
-        if (ViewModel != null)
-            ClearSubscriptions(ViewModel);
-    }
-
-    private void ClearSubscriptions(AnimationModificationTrack oldValue) {
-        oldValue.KeyFrames.CollectionChanged -= KeyFrames_CollectionChanged;
-        oldValue.PropertyChanged -= ViewModel_PropertyChanged;
+        unsubscribe?.Invoke();
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e) {
         foreach (var child in Children) {
-            child[Canvas.LeftProperty] = GetLeftFromFrame(((IKeyFrame)child.DataContext!).Frame);
-            child.Height = this.Bounds.Height;
+            switch (child.DataContext) {
+                case IKeyFrame keyFrame:
+                    SetKeyFrameIndicatorShape((Panel)child, keyFrame);
+                    break;
+                case IKeyFrameInterval interval:
+                    SetKeyFrameIntervalIndicatorShape((Panel)child, interval);
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
         }
     }
 }
