@@ -12,11 +12,19 @@
 		</ItemsControl.ItemsPanel>
 		<ItemsControl.ItemTemplate>
 			<DataTemplate>
-				<MenuItem Header="{Binding Header}"
-						  Command="{Binding Command}"
-						  InputGesture="{Binding HotKey}"
-						  HotKey="{Binding HotKey}"
-						  IsEnabled="{Binding CanExecute}"/>
+				<Button Content="{Binding}"
+						Command="{Binding Command}"
+						HotKey="{Binding HotKey}"
+						IsEnabled="{Binding CanExecute}">
+					<Button.ContentTemplate>
+						<DataTemplate>
+							<DockPanel HorizontalAlignment="Right" Width="180">
+								<TextBlock Text="{Binding Header}"  Margin="5,0"/>
+								<TextBlock Text="{Binding HotKey}" Margin="5,0" HorizontalAlignment="Right"/>
+							</DockPanel>
+						</DataTemplate>
+					</Button.ContentTemplate>
+				</Button>
 			</DataTemplate>
 		</ItemsControl.ItemTemplate>
 	</ItemsControl>
