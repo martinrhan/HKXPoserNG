@@ -27,6 +27,7 @@ public partial class SliderCoveredNumberBox : Panel {
     public SliderCoveredNumberBox() {
         textBox = new() {
             Text = Number.ToString(),
+            Padding = new(0),
         };
         textBox.LostFocus += TextBox_LostFocus;
         sliderCover = new() {

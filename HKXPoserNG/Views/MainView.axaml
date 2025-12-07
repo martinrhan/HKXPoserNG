@@ -24,7 +24,7 @@
 	<v:SkeletonView Grid.Column="2" Grid.RowSpan="4"/>
 	<v:D3D11View Grid.Row="1" ZIndex="-1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
 	<DockPanel Name="dockPanel_animationEditorMenu" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
-	<v:BoneView Grid.Row="1" Width="200" VerticalAlignment="Top" HorizontalAlignment="Right"/>
+	<v:SelectedBoneView Grid.Row="1" Width="200" VerticalAlignment="Top" HorizontalAlignment="Right"/>
 	<GridSplitter Grid.Row="2" Height="5"/>
 	<v:AnimationEditorView Grid.Row="3"/>
 	<DockPanel Name="dockPanel_animationEditorAffectedBonesView" Grid.Row="3" Grid.Column="2" VerticalAlignment="Bottom"/>

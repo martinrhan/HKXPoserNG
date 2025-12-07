@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:c="using:HKXPoserNG.Controls"
              mc:Ignorable="d" d:DesignWidth="100"
-             x:Class="HKXPoserNG.Views.BoneView"
+             x:Class="HKXPoserNG.Views.SelectedBoneView"
 			 >
   <Grid Name="grid">
   </Grid>
