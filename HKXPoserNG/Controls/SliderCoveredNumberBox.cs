@@ -82,7 +82,7 @@ public partial class SliderCoveredNumberBox : Panel {
         if (pointerPressed) {
             Point pointerPosotion = e.GetPosition(sliderCover);
             double delta = pointerPosotion.X - lastPointerPosition.X;
-            Number = Math.Clamp(Number + delta * Sensibility, MinNumber, MaxNumber);
+            Number = Math.Clamp(Number + delta * Sensitivity, MinNumber, MaxNumber);
             lastPointerPosition = pointerPosotion;
         }
     }
