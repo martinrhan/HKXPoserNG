@@ -1,32 +1,34 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:v="using:HKXPoserNG.Views"
-             xmlns:vm="using:HKXPoserNG.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:v="using:HKXPoserNG.Views"
+			 xmlns:vm="using:HKXPoserNG.ViewModels"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 IsHitTestVisible="True"
-             x:Class="HKXPoserNG.Views.MainView">
-  <Control.Styles>
-	<Style Selector="MenuItem">
-	  <Setter Property="Header" Value="{Binding Header}"/>
-	  <Setter Property="ItemsSource" Value="{Binding Items}"/>
-	  <Setter Property="Command" Value="{Binding Command}"/>
-	  <Setter Property="InputGesture" Value="{Binding HotKey}"/>
-	  <Setter Property="HotKey" Value="{Binding HotKey}"/>
-	  <Setter Property="Icon" Value="{Binding Icon}"/>
-	  <Setter Property="IsEnabled" Value="{Binding CanExecute}"/>
-	</Style>
-  </Control.Styles>
-  <Grid ColumnDefinitions="*, auto, auto" RowDefinitions="auto, *, auto, 200">
-	<Menu Name="menu" Grid.Row="0" Grid.ColumnSpan="2" DataContext="{x:Static vm:MenuViewModel.Instance}" ItemsSource="{Binding Items}"/>
-	<GridSplitter Grid.Column="1" Grid.RowSpan="4" Width="5"/>
-	<v:SkeletonView Grid.Column="2" Grid.RowSpan="4"/>
-	<v:D3D11View Grid.Row="1" ZIndex="-1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-	<DockPanel Name="dockPanel_animationEditorMenu" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
-	<v:SelectedBoneView Grid.Row="1" Width="200" VerticalAlignment="Top" HorizontalAlignment="Right"/>
-	<GridSplitter Grid.Row="2" Height="5"/>
-	<v:AnimationEditorView Grid.Row="3"/>
-	<DockPanel Name="dockPanel_animationEditorAffectedBonesView" Grid.Row="3" Grid.Column="2" VerticalAlignment="Bottom"/>
-  </Grid>
+			 x:Class="HKXPoserNG.Views.MainView">
+	<Control.Styles>
+		<Style Selector="MenuItem">
+			<Setter Property="Header" Value="{Binding Header}"/>
+			<Setter Property="ItemsSource" Value="{Binding Items}"/>
+			<Setter Property="Command" Value="{Binding Command}"/>
+			<Setter Property="InputGesture" Value="{Binding HotKey}"/>
+			<Setter Property="HotKey" Value="{Binding HotKey}"/>
+			<Setter Property="Icon" Value="{Binding Icon}"/>
+			<Setter Property="IsEnabled" Value="{Binding CanExecute}"/>
+		</Style>
+	</Control.Styles>
+	<Grid ColumnDefinitions="*, auto, auto" RowDefinitions="auto, *, auto, 200">
+		<Menu Name="menu" Grid.Row="0" Grid.ColumnSpan="2" DataContext="{x:Static vm:MenuViewModel.Instance}" ItemsSource="{Binding Items}"/>
+		<GridSplitter Grid.Column="1" Grid.RowSpan="4" Width="5"/>
+		<Grid Grid.Column="2" Grid.RowSpan="4" RowDefinitions="*,auto">
+			<v:SkeletonView/>
+			<DockPanel Name="dockPanel_animationEditorAffectedBonesView" Grid.Row="1"/>
+		</Grid>
+		<v:D3D11View Grid.Row="1" ZIndex="-1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+		<DockPanel Name="dockPanel_animationEditorMenu" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+		<v:SelectedBoneView Grid.Row="1" Width="200" VerticalAlignment="Top" HorizontalAlignment="Right"/>
+		<GridSplitter Grid.Row="2" Height="5"/>
+		<v:AnimationEditorView Grid.Row="3"/>
+	</Grid>
 </UserControl>

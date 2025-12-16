@@ -25,14 +25,14 @@ public partial class AnimationModificationTrackView : Canvas {
         unsubscribe?.Invoke();
         if (ViewModel == null) return;
         var subscription0 = ViewModel.
-            GetPropertyObservable(nameof(AnimationModificationTrack.IsSelected), amt => amt.IsSelected).
+            GetPropertyValueObservable(nameof(AnimationModificationTrack.IsSelected), amt => amt.IsSelected).
             Subscribe(b => this.Background = b ? Brushes.LightBlue : Brushes.White);
         var subscription1 = ViewModel.
             KeyFrames.GetCollectionChangedObservable().
             Subscribe(ep => KeyFrames_CollectionChanged(ep.EventArgs));
         var subscription2 = ViewModel.
              KeyFrameIntervals.GetItemsObservable(
-                 interval => interval.GetPropertyObservable(nameof(IKeyFrameInterval.InterpolationFunction), kf => kf.InterpolationFunction)
+                 interval => interval.GetPropertyValueObservable(nameof(IKeyFrameInterval.InterpolationFunction), kf => kf.InterpolationFunction)
              ).
              Subscribe(t => KeyFrameIntervals_ItemInterpolationFunctionChanged(t.Item1, t.Item2));
         unsubscribe = () => {

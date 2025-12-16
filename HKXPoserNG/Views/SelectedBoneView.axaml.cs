@@ -31,18 +31,18 @@ public partial class SelectedBoneView : UserControl {
     public SelectedBoneView() {
         InitializeComponent();
         IObservable<Bone?> observable_selectedBone = 
-            Skeleton.Instance.GetPropertyObservable(nameof(Skeleton.SelectedBone), s => s.SelectedBone);
+            Skeleton.Instance.GetPropertyValueObservable(nameof(Skeleton.SelectedBone), s => s.SelectedBone);
         IObservable<int> observable_currentFrame =
-            Animation.Instance.GetPropertyObservable(nameof(Animation.CurrentFrame), a => a.CurrentFrame);
+            Animation.Instance.GetPropertyValueObservable(nameof(Animation.CurrentFrame), a => a.CurrentFrame);
 
         observable_selectedBone.Subscribe(_ => UpdateControlValues());
 
         Observable.CombineLatest(observable_selectedBone, observable_currentFrame, (b, f) => (b, f)).Subscribe(_ => UpdateControlValues());
 
         IObservable<bool> observable_hasKeyFrame =
-            AnimationEditor.Instance.GetPropertyObservable(nameof(AnimationEditor.SelectedKeyFrame), ae => ae.SelectedKeyFrame != null);
+            AnimationEditor.Instance.GetPropertyValueObservable(nameof(AnimationEditor.SelectedKeyFrame), ae => ae.SelectedKeyFrame != null);
         IObservable<AnimationModificationTrack?> observable_selectedModificationTrack =
-            AnimationEditor.Instance.GetPropertyObservable(nameof(AnimationEditor.SelectedModificationTrack), ae => ae.SelectedModificationTrack);
+            AnimationEditor.Instance.GetPropertyValueObservable(nameof(AnimationEditor.SelectedModificationTrack), ae => ae.SelectedModificationTrack);
         IObservable<IAvaloniaReadOnlyList<Bone>?> observable_affectedBones =
             observable_selectedModificationTrack.Select(smt => smt?.AffectedBones);
         IObservable<NotifyCollectionChangedEventArgs?> observable_collectionChanged = observable_selectedModificationTrack.

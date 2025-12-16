@@ -154,5 +154,4 @@ public partial class Skeleton {
     [Notify]
     private Bone? selectedBone;
 
-
 }

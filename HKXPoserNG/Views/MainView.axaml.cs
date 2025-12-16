@@ -34,6 +34,6 @@ public partial class MainView : UserControl {
             menu.GetLogicalChildren().OfType<MenuItem>().First().IsSubMenuOpen = true;
         };
         dockPanel_animationEditorMenu.AddCollapsibleControl(new AnimationEditorMenu(), Dock.Top);
-        dockPanel_animationEditorAffectedBonesView.AddCollapsibleControl(new AnimationEditorAffectedBonesView(), Dock.Right);
+        dockPanel_animationEditorAffectedBonesView.AddCollapsibleControl(new AnimationEditorAffectedBonesView(), Dock.Top);
     }
 }

@@ -15,7 +15,7 @@ namespace HKXPoserNG.ViewModels;
 public partial class AnimationModificationTrack : IDisposable {
     public AnimationModificationTrack() {
         subscription = AnimationEditor.Instance.
-             GetPropertyObservable(nameof(AnimationEditor.SelectedModificationTrack), ae => ae.SelectedModificationTrack).
+             GetPropertyValueObservable(nameof(AnimationEditor.SelectedModificationTrack), ae => ae.SelectedModificationTrack).
              Subscribe(smt => this.IsSelected = smt == this);
     }
     [Notify]

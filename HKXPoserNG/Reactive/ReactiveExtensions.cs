@@ -10,17 +10,24 @@ using System.Collections.Specialized;
 namespace HKXPoserNG.Reactive;
 
 public static class ReactiveExtensions {
-    public static IObservable<EventPattern<PropertyChangedEventArgs>> GetObservable(this INotifyPropertyChanged source, string propertyName) {
+    public static IObservable<EventPattern<PropertyChangedEventArgs>> GetPropertyChangedObservable(this INotifyPropertyChanged source, string propertyName) {
         return Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
             h => source.PropertyChanged += h,
             h => source.PropertyChanged -= h).
             Where(e => e.EventArgs.PropertyName == propertyName);
     }
 
-    public static IObservable<TProperty> GetPropertyObservable<TSource, TProperty>(this TSource source, string propertyName, Func<TSource, TProperty> propertyGetter) where TSource : INotifyPropertyChanged {
-        return source.GetObservable(propertyName)
+    public static IObservable<T> StartWithFunc<T>(this IObservable<T> source, Func<T> getter) {
+        return Observable.Create<T>(observer => {
+            observer.OnNext(getter());
+            return source.Subscribe(observer);
+        });
+    }
+
+    public static IObservable<TProperty> GetPropertyValueObservable<TSource, TProperty>(this TSource source, string propertyName, Func<TSource, TProperty> propertyGetter) where TSource : INotifyPropertyChanged {
+        return source.GetPropertyChangedObservable(propertyName)
             .Select(_ => propertyGetter(source))
-            .StartWith(propertyGetter(source));
+            .StartWithFunc(() => propertyGetter(source));
     }
 
     public static IObservable<EventPattern<NotifyCollectionChangedEventArgs>> GetCollectionChangedObservable<T>(this IAvaloniaReadOnlyList<T> list) {

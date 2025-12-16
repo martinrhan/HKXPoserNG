@@ -18,7 +18,7 @@ public partial class AnimationEditor {
     public AnimationEditor() {
         GetObservable_SelectedKeyFrameIndex().Subscribe(ChangedSelectedKeyFrame);
         GetObservable_SelectedInterpolationInterval().Subscribe(ChangedSelectedKeyFrameIntervalIndex);
-        var observable_hasSelecetedModificationTrack = this.GetPropertyObservable(nameof(SelectedModificationTrack), ae => ae.SelectedModificationTrack != null);
+        var observable_hasSelecetedModificationTrack = this.GetPropertyValueObservable(nameof(SelectedModificationTrack), ae => ae.SelectedModificationTrack != null);
         MenuItems = [
             new(Animation.Instance.AnimationChangedObservable.Select(u => true)) {
                 Header = "Add Modification Track",
@@ -33,7 +33,7 @@ public partial class AnimationEditor {
             new(
                 Observable.CombineLatest(
                     observable_hasSelecetedModificationTrack,
-                    this.GetPropertyObservable(nameof(SelectedKeyFrame), ae => ae.SelectedKeyFrame == null),
+                    this.GetPropertyValueObservable(nameof(SelectedKeyFrame), ae => ae.SelectedKeyFrame == null),
                     (hasSelecetedModificationTrack, hasNoSelectedKeyFrame) => hasSelecetedModificationTrack && hasNoSelectedKeyFrame
                 )
             ){
@@ -41,15 +41,15 @@ public partial class AnimationEditor {
                 Command = AddKeyFrameCommand,
                 HotKey = new KeyGesture(Key.D3)
             },
-            new(this.GetPropertyObservable(nameof(SelectedKeyFrame), ae => ae.SelectedKeyFrame != null)){
+            new(this.GetPropertyValueObservable(nameof(SelectedKeyFrame), ae => ae.SelectedKeyFrame != null)){
                 Header = "Remove Key Frame",
                 Command= RemoveKeyFrameCommand,
                 HotKey = new KeyGesture(Key.D4)
             },
             new(
-                this.GetPropertyObservable(
+                this.GetPropertyValueObservable(
                     nameof(SelectedKeyFrameInterval),
-                    ae => ae.SelectedKeyFrameInterval?.GetPropertyObservable(
+                    ae => ae.SelectedKeyFrameInterval?.GetPropertyValueObservable(
                             nameof(IKeyFrameInterval.InterpolationFunction),
                             kfi => kfi.InterpolationFunction == null
                         ) ?? Observable.Return(false)
@@ -60,9 +60,9 @@ public partial class AnimationEditor {
                 HotKey = new KeyGesture(Key.D5)
             },
             new(
-                this.GetPropertyObservable(
+                this.GetPropertyValueObservable(
                     nameof(SelectedKeyFrameInterval),
-                    ae => ae.SelectedKeyFrameInterval?.GetPropertyObservable(
+                    ae => ae.SelectedKeyFrameInterval?.GetPropertyValueObservable(
                             nameof(IKeyFrameInterval.InterpolationFunction),
                             kfi => kfi.InterpolationFunction != null
                         ) ?? Observable.Return(false)
@@ -128,7 +128,7 @@ public partial class AnimationEditor {
     private SimpleCommand RemoveInterpolationCommand => field ??= new(() => SelectedKeyFrameInterval?.InterpolationFunction = null);
 
     private IObservable<AnimationModificationTrack?> observable_selectedModificationTrack =>
-        field ??= this.GetPropertyObservable(nameof(SelectedModificationTrack), ae => ae.SelectedModificationTrack);
+        field ??= this.GetPropertyValueObservable(nameof(SelectedModificationTrack), ae => ae.SelectedModificationTrack);
     private IObservable<EventPattern<NotifyCollectionChangedEventArgs>?> observable_keyFramesCollectionChanged =>
         field ??= observable_selectedModificationTrack.
             Select(smt => smt?.KeyFrames.
@@ -137,7 +137,7 @@ public partial class AnimationEditor {
             ).
             Switch();
     private IObservable<int> observable_currentFrame => field ??=
-        Animation.Instance.GetPropertyObservable(nameof(Animation.CurrentFrame), a => a.CurrentFrame);
+        Animation.Instance.GetPropertyValueObservable(nameof(Animation.CurrentFrame), a => a.CurrentFrame);
 
     public IKeyFrame? SelectedKeyFrame { get; private set; } = null;
     private IObservable<IKeyFrame?> GetObservable_SelectedKeyFrameIndex() {

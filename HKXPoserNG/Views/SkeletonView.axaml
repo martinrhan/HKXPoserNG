@@ -1,17 +1,10 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="HKXPoserNG.Views.SkeletonView">
-  <TreeView Name="treeView" ItemsSource="{Binding Root}" SelectedItem="{Binding SelectedBone}">
-	<TreeView.ItemTemplate>
-	  <TreeDataTemplate ItemsSource="{Binding Children}">
-		<StackPanel Orientation="Horizontal">
-		  <TextBlock Text="{Binding Index}" />
-		  <TextBlock Text="{Binding Name}" Margin="10,0"/>
-		</StackPanel>
-	  </TreeDataTemplate>
-	</TreeView.ItemTemplate>
-  </TreeView>
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:mia="using:Material.Icons.Avalonia"
+			 mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="450"
+			 x:Class="HKXPoserNG.Views.SkeletonView">
+	<TreeView Name="treeView" ItemsSource="{Binding Root}" SelectedItem="{Binding SelectedBone}">
+	</TreeView>
 </UserControl>
