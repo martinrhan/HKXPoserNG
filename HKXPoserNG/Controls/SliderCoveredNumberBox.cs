@@ -22,7 +22,7 @@ namespace HKXPoserNG.Controls;
 [DependencyProperty("Number", typeof(double))]
 [DependencyProperty("MinNumber", typeof(double))]
 [DependencyProperty("MaxNumber", typeof(double), DefaultValue = 100)]
-[DependencyProperty("Sensibility", typeof(double), DefaultValue = 1)]
+[DependencyProperty("Sensitivity", typeof(double), DefaultValue = 1)]
 public partial class SliderCoveredNumberBox : Panel {
     public SliderCoveredNumberBox() {
         textBox = new() {

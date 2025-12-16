@@ -10,13 +10,13 @@ using System.Numerics;
 namespace HKXPoserNG;
 
 [DependencyProperty("Vector", typeof(Vector3), DefaultBindingMode = DefaultBindingMode.TwoWay)]
-[DependencyProperty("Sensibility", typeof(double), DefaultValue = 1)]
+[DependencyProperty("Sensitivity", typeof(double), DefaultValue = 1)]
 public partial class Vector3Editor : UserControl {
     public Vector3Editor() {
         InitializeComponent();
-        numberBoxX[SliderCoveredNumberBox.SensibilityProperty.Bind()] = this[SensibilityProperty.Bind()];
-        numberBoxY[SliderCoveredNumberBox.SensibilityProperty.Bind()] = this[SensibilityProperty.Bind()];
-        numberBoxZ[SliderCoveredNumberBox.SensibilityProperty.Bind()] = this[SensibilityProperty.Bind()];
+        numberBoxX[SliderCoveredNumberBox.SensitivityProperty.Bind()] = this[SensitivityProperty.Bind()];
+        numberBoxY[SliderCoveredNumberBox.SensitivityProperty.Bind()] = this[SensitivityProperty.Bind()];
+        numberBoxZ[SliderCoveredNumberBox.SensitivityProperty.Bind()] = this[SensitivityProperty.Bind()];
 
         numberBoxX.PropertyChanged += NumberBoxX_PropertyChanged;
         numberBoxY.PropertyChanged += NumberBoxY_PropertyChanged;
