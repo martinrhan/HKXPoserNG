@@ -16,6 +16,7 @@ using HKXPoserNG.Reactive;
 using System.Reactive.Linq;
 using HKXPoserNG.Mvvm;
 using System.Diagnostics;
+using Avalonia.Input;
 
 namespace HKXPoserNG.Views;
 
@@ -63,7 +64,7 @@ public partial class SkeletonView : UserControl {
                             } else {
                                 selectedModificationTrack.AddAffectedBone(bone);
                             }
-                        })
+                        }),
                     }
                 ])
             ,
@@ -72,7 +73,7 @@ public partial class SkeletonView : UserControl {
     }
 
     private void TreeView_SelectionChanged(object? sender, SelectionChangedEventArgs e) {
-        Debug.WriteLine("TreeView_SelectionChanged, Bones: " + string.Join(", ", e.AddedItems.OfType<Bone>().Select(b => b.ToString())) );
+        Debug.WriteLine("TreeView_SelectionChanged, Bones: " + string.Join(", ", e.AddedItems.OfType<Bone>().Select(b => b.ToString())));
         foreach (Bone bone in e.AddedItems.OfType<Bone>()) {
             Stack<Bone> path = new();
             Bone? b = bone;
@@ -99,4 +100,19 @@ public partial class SkeletonView : UserControl {
         }
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) {
+        base.OnAttachedToVisualTree(e);
+        MainWindow mainWindow = (this.VisualRoot as MainWindow)!;
+        mainWindow.KeyDown += (_, e) => {
+            Bone? selectedBone = Skeleton.Instance.SelectedBone;
+            if (selectedBone == null) return;
+            AnimationModificationTrack? selectedModificationTrack = AnimationEditor.Instance.SelectedModificationTrack;
+            if (selectedModificationTrack == null) return;
+            if (selectedBone.IsAffectedBySelectedModificationTrack) {
+                if (e.Key == Key.OemMinus) selectedModificationTrack!.RemoveAffectedBone(selectedBone);
+            } else {
+                if (e.Key == Key.OemPlus) selectedModificationTrack!.AddAffectedBone(selectedBone);
+            }
+        };
+    }
 }
