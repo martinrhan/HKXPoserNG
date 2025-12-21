@@ -42,8 +42,8 @@ public partial class Bone {
     public Transform LocalOriginal => Animation.Instance.Poses[Animation.Instance.CurrentFrame].Transforms.GetOrDefault(Index, Transform.Identity);
 
     public Transform LocalModification {
-        get => AnimationEditor.Instance.GetCurrentBoneLocalModification(Index);
-        set => AnimationEditor.Instance.SetCurrentBoneLocalModificationIfPossible(Index, value);
+        get => AnimationEditor.Instance.GetBoneLocalModification(this);
+        set => AnimationEditor.Instance.SetBoneLocalModificationIfPossible(this, value);
     }
 
     public Transform LocalModified => LocalModification * LocalOriginal;

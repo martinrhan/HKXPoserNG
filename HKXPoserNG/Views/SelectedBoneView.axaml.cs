@@ -30,7 +30,7 @@ public partial class SelectedBoneView : UserControl {
 
     public SelectedBoneView() {
         InitializeComponent();
-        IObservable<Bone?> observable_selectedBone = 
+        IObservable<Bone?> observable_selectedBone =
             Skeleton.Instance.GetPropertyValueObservable(nameof(Skeleton.SelectedBone), s => s.SelectedBone);
         IObservable<int> observable_currentFrame =
             Animation.Instance.GetPropertyValueObservable(nameof(Animation.CurrentFrame), a => a.CurrentFrame);
@@ -50,9 +50,9 @@ public partial class SelectedBoneView : UserControl {
             Select(ep => ep.EventArgs) ?? Observable.Return<NotifyCollectionChangedEventArgs?>(null)).
             Switch();
         IObservable<bool> observable_isSelectedBoneEditable = Observable.CombineLatest(
-            observable_selectedBone, observable_affectedBones, observable_collectionChanged,
-            (selectedBone, affectedBones, _) => {
-                if (selectedBone == null || affectedBones == null) return false;
+            observable_hasKeyFrame, observable_selectedBone, observable_affectedBones, observable_collectionChanged,
+            (hasKeyFrame, selectedBone, affectedBones, _) => {
+                if (!hasKeyFrame || selectedBone == null || affectedBones == null) return false;
                 return affectedBones.Contains(selectedBone);
             }
         );
@@ -65,7 +65,7 @@ public partial class SelectedBoneView : UserControl {
             grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
             grid.Children.Add(new TextBlock() { Text = text, FontWeight = FontWeight.Bold, [Grid.RowProperty] = row++, [Grid.ColumnSpanProperty] = 2 });
         }
-        void AddFloat(string mark, Func<Bone?, float> getNewValue, Action<Bone, float>? setNewValue = null) {
+        void AddFloat(string mark, Func<Bone?, float> getNewValue, Action<Bone, float>? setNewValue = null, Action<SliderCoveredNumberBox>? action = null) {
             grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
             grid.Children.Add(new TextBlock() { Text = mark, [Grid.RowProperty] = row });
             Control control;
@@ -79,8 +79,9 @@ public partial class SelectedBoneView : UserControl {
                     [Grid.RowProperty] = row,
                     [Grid.ColumnProperty] = 1,
                     [IsEnabledProperty.Bind()] = observable_isSelectedBoneEditable.ToBinding(),
-                    Margin = new(10, 0, 0, 0)
+                    Margin = new(10, 0, 0, 0),
                 };
+                action?.Invoke(numberBox);
                 control = numberBox;
                 numberBox.NumberChanged.Subscribe(t => {
                     if (Skeleton.Instance.SelectedBone != null) setNewValue(Skeleton.Instance.SelectedBone, (float)t.NewValue);
@@ -91,7 +92,7 @@ public partial class SelectedBoneView : UserControl {
             grid.Children.Add(control);
             row++;
         }
-        void AddVector3(string mark, Func<Bone?, Vector3> getNewValue, Action<Bone, Vector3>? setNewValue = null) {
+        void AddVector3(string mark, Func<Bone?, Vector3> getNewValue, Action<Bone, Vector3>? setNewValue = null, Action<Vector3Editor>? action = null) {
             grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
             grid.Children.Add(new TextBlock() { Text = mark, [Grid.RowProperty] = row });
             if (setNewValue == null) {
@@ -105,8 +106,9 @@ public partial class SelectedBoneView : UserControl {
                     [Grid.RowProperty] = row,
                     [Grid.ColumnProperty] = 1,
                     [IsEnabledProperty.Bind()] = observable_isSelectedBoneEditable.ToBinding(),
-                    Margin = new(5, 0, 0, 0)
+                    Margin = new(5, 0, 0, 0),
                 };
+                action?.Invoke(vector3Editor);
                 vector3Editor.VectorChanged.Subscribe(v => {
                     if (Skeleton.Instance.SelectedBone != null) setNewValue(Skeleton.Instance.SelectedBone!, v);
                 });
@@ -127,7 +129,7 @@ public partial class SelectedBoneView : UserControl {
         AddVector3("T", b => b?.LocalOriginal.Translation ?? Vector3.Zero);
         AddEmptyRow();
         AddHeader("Local Modification");
-        AddFloat("S", b => b?.LocalModification.Scale ?? 1, (b, s) => b.LocalModification = b.LocalModification with { Scale = s });
+        AddFloat("S", b => b?.LocalModification.Scale ?? 1, (b, s) => b.LocalModification = b.LocalModification with { Scale = s }, scnb => { scnb.Sensitivity = 0.01d; scnb.MaxNumber = 1; });
         AddVector3("R", b => b?.LocalModification.Rotation.ToEuler() ?? Vector3.Zero, (b, r) => b.LocalModification = b.LocalModification with { Rotation = r.FromEuler() });
         AddVector3("T", b => b?.LocalModification.Translation ?? Vector3.Zero, (b, t) => b.LocalModification = b.LocalModification with { Translation = t });
     }

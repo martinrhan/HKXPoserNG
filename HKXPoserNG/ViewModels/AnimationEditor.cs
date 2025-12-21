@@ -74,22 +74,16 @@ public partial class AnimationEditor {
             }
         ];
     }
-    public Transform GetBoneLocalModification(int frame, int index) {
-        return Transform.Identity;
+    public Transform GetBoneLocalModification(Bone bone) {
+        if (SelectedModificationTrack == null || SelectedKeyFrame == null) return Transform.Identity;
+        return SelectedModificationTrack.GetTransform(SelectedKeyFrame, bone);
     }
-    public Transform GetCurrentBoneLocalModification(int index) {
-        return GetBoneLocalModification(Animation.Instance.CurrentFrame, index);
+    public void SetBoneLocalModification(Bone bone, Transform value) {
+        SelectedModificationTrack!.SetTransform(SelectedKeyFrame!, bone, value);
     }
-    public void SetBoneLocalModification(AnimationModificationTrack track, IKeyFrame keyFrame, int i_affectedBone, Transform value) {
-        track.SetTransform(keyFrame, i_affectedBone, value);
-    }
-    public void SetCurrentBoneLocalModification(int i_affectedBone, Transform value) {
-        SetBoneLocalModification(SelectedModificationTrack!, SelectedKeyFrame!, i_affectedBone, value);
-    }
-    public void SetCurrentBoneLocalModificationIfPossible(int index, Transform value) {
-        if (SelectedModificationTrack == null) return;
-        if (SelectedKeyFrame == null) return;
-        SetBoneLocalModification(SelectedModificationTrack, SelectedKeyFrame, index, value);
+    public void SetBoneLocalModificationIfPossible(Bone bone, Transform value) {
+        if (SelectedModificationTrack == null || SelectedKeyFrame == null) return;
+        SelectedModificationTrack.SetTransform(SelectedKeyFrame, bone, value); 
     }
 
     [Notify]

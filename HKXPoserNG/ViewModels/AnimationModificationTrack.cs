@@ -104,6 +104,14 @@ public partial class AnimationModificationTrack : IDisposable {
         return (keyFrames[i_interval], keyFrames[i_interval + 1]);
     }
 
+    public Transform GetTransform(IKeyFrame keyFrame, Bone bone) {
+        int i_bone = affectedBones.IndexOf(bone);
+        if (i_bone == -1) return Transform.Identity;
+        return GetTransform(keyFrame, i_bone);
+    }
+    public Transform GetTransform(IKeyFrame keyFrame, int i_affectedBone) {
+        return ((KeyFrame)keyFrame).transforms[i_affectedBone];
+    }
     public void SetTransform(IKeyFrame keyFrame, Bone bone, Transform value) {
         SetTransform(keyFrame, affectedBones.IndexOf(bone), value);
     }
