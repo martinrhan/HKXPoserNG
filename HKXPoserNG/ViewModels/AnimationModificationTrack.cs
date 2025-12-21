@@ -37,9 +37,10 @@ public partial class AnimationModificationTrack : IDisposable {
     public IAvaloniaReadOnlyList<IKeyFrameInterval> KeyFrameIntervals => keyFrameIntervals;
 
     public void AddAffectedBone(Bone bone) {
-        affectedBones.Add(bone);
+        int i_insert = Enumerable.Range(0, affectedBones.Count).FirstOrDefault(i => bone.Index < affectedBones[i].Index, affectedBones.Count);
+        affectedBones.Insert(i_insert, bone);
         foreach (var keyFrame in keyFrames) {
-            keyFrame.transforms.Add(Transform.Identity);
+            keyFrame.transforms.Insert(i_insert, Transform.Identity);
         }
     }
     public bool RemoveAffectedBone(Bone bone) {
