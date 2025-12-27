@@ -8,6 +8,7 @@ using SingletonSourceGenerator.Attributes;
 using System;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reactive;
 using System.Reactive.Linq;
 
@@ -83,7 +84,7 @@ public partial class AnimationEditor {
     }
     public void SetBoneLocalModificationIfPossible(Bone bone, Transform value) {
         if (SelectedModificationTrack == null || SelectedKeyFrame == null) return;
-        SelectedModificationTrack.SetTransform(SelectedKeyFrame, bone, value); 
+        SelectedModificationTrack.SetTransformIfPossible(SelectedKeyFrame, bone, value); 
     }
 
     [Notify]

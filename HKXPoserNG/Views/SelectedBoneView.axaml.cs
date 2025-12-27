@@ -68,55 +68,38 @@ public partial class SelectedBoneView : UserControl {
         void AddFloat(string mark, Func<Bone?, float> getNewValue, Action<Bone, float>? setNewValue = null, Action<SliderCoveredNumberBox>? action = null) {
             grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
             grid.Children.Add(new TextBlock() { Text = mark, [Grid.RowProperty] = row });
-            Control control;
-            Action updateControlValueAction;
-            if (setNewValue == null) {
-                TextBlock textBlock = new() { [Grid.RowProperty] = row, [Grid.ColumnProperty] = 1, Margin = new(10, 0, 0, 0) };
-                control = textBlock;
-                updateControlValueAction = () => textBlock.Text = getNewValue(Skeleton.Instance.SelectedBone).ToString();
-            } else {
-                SliderCoveredNumberBox numberBox = new() {
-                    [Grid.RowProperty] = row,
-                    [Grid.ColumnProperty] = 1,
-                    [IsEnabledProperty.Bind()] = observable_isSelectedBoneEditable.ToBinding(),
-                    Margin = new(10, 0, 0, 0),
-                };
-                action?.Invoke(numberBox);
-                control = numberBox;
-                numberBox.NumberChanged.Subscribe(t => {
-                    if (Skeleton.Instance.SelectedBone != null) setNewValue(Skeleton.Instance.SelectedBone, (float)t.NewValue);
-                });
-                updateControlValueAction = () => numberBox.Number = getNewValue(Skeleton.Instance.SelectedBone);
-            }
+            SliderCoveredNumberBox numberBox = new() {
+                [Grid.RowProperty] = row,
+                [Grid.ColumnProperty] = 1,
+                [IsEnabledProperty.Bind()] = observable_isSelectedBoneEditable.ToBinding(),
+                ReadOnlyMode = setNewValue == null,
+                Margin = new(10, 0, 0, 0),
+            };
+            if (setNewValue != null) numberBox.NumberChanged.Subscribe(t => {
+                if (Skeleton.Instance.SelectedBone != null) setNewValue(Skeleton.Instance.SelectedBone, (float)t.NewValue);
+            });
+            action?.Invoke(numberBox);
+            Action updateControlValueAction = () => numberBox.Number = getNewValue(Skeleton.Instance.SelectedBone);
             updateControlValueActions.Add(updateControlValueAction);
-            grid.Children.Add(control);
+            grid.Children.Add(numberBox);
             row++;
         }
         void AddVector3(string mark, Func<Bone?, Vector3> getNewValue, Action<Bone, Vector3>? setNewValue = null, Action<Vector3Editor>? action = null) {
             grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
             grid.Children.Add(new TextBlock() { Text = mark, [Grid.RowProperty] = row });
-            if (setNewValue == null) {
-                Vector3Displayer vector3Displayer = new() { [Grid.RowProperty] = row, [Grid.ColumnProperty] = 1, Margin = new(5, 0, 0, 0) };
-                updateControlValueActions.Add(() => {
-                    vector3Displayer.Vector = getNewValue(Skeleton.Instance.SelectedBone);
-                });
-                grid.Children.Add(vector3Displayer);
-            } else {
-                Vector3Editor vector3Editor = new() {
-                    [Grid.RowProperty] = row,
-                    [Grid.ColumnProperty] = 1,
-                    [IsEnabledProperty.Bind()] = observable_isSelectedBoneEditable.ToBinding(),
-                    Margin = new(5, 0, 0, 0),
-                };
-                action?.Invoke(vector3Editor);
-                vector3Editor.VectorChanged.Subscribe(v => {
-                    if (Skeleton.Instance.SelectedBone != null) setNewValue(Skeleton.Instance.SelectedBone!, v);
-                });
-                updateControlValueActions.Add(() => {
-                    vector3Editor.Vector = getNewValue(Skeleton.Instance.SelectedBone);
-                });
-                grid.Children.Add(vector3Editor);
-            }
+            Vector3Editor vector3Editor = new() {
+                [Grid.RowProperty] = row,
+                [Grid.ColumnProperty] = 1,
+                [IsEnabledProperty.Bind()] = observable_isSelectedBoneEditable.ToBinding(),
+                ReadOnlyMode = setNewValue == null,
+                Margin = new(5, 0, 0, 0),
+            };
+            if (setNewValue != null) vector3Editor.VectorChanged.Subscribe(v => {
+                if (Skeleton.Instance.SelectedBone != null) setNewValue(Skeleton.Instance.SelectedBone!, v);
+            });
+            action?.Invoke(vector3Editor);
+            updateControlValueActions.Add(() => vector3Editor.Vector = getNewValue(Skeleton.Instance.SelectedBone));
+            grid.Children.Add(vector3Editor);
             row++;
         }
         void AddEmptyRow() {
@@ -125,13 +108,26 @@ public partial class SelectedBoneView : UserControl {
         }
         AddHeader("Local Original");
         AddFloat("S", b => b?.LocalOriginal.Scale ?? 1);
-        AddVector3("R", b => b?.LocalOriginal.Rotation.ToEuler() ?? Vector3.Zero);
+        AddVector3("R", b => b?.LocalOriginal.Rotation.ToEuler() ?? Vector3.Zero, null, v3e => { v3e.Factor = Math.PI; v3e.FactorSymbol = "¦Ð"; });
         AddVector3("T", b => b?.LocalOriginal.Translation ?? Vector3.Zero);
         AddEmptyRow();
         AddHeader("Local Modification");
-        AddFloat("S", b => b?.LocalModification.Scale ?? 1, (b, s) => b.LocalModification = b.LocalModification with { Scale = s }, scnb => { scnb.Sensitivity = 0.01d; scnb.MaxNumber = 1; });
-        AddVector3("R", b => b?.LocalModification.Rotation.ToEuler() ?? Vector3.Zero, (b, r) => b.LocalModification = b.LocalModification with { Rotation = r.FromEuler() });
+        AddFloat("S",
+            b => b?.LocalModification.Scale ?? 1,
+            (b, s) => b.LocalModification = b.LocalModification with { Scale = s },
+            scnb => { scnb.Sensitivity = 0.01d; scnb.MinNumber = 0; scnb.MaxNumber = 1; }
+        );
+        AddVector3("R",
+            b => b?.LocalModification.Rotation.ToEuler() ?? Vector3.Zero,
+            (b, r) => b.LocalModification = b.LocalModification with { Rotation = r.FromEuler() },
+            v3e => { v3e.Sensitivity = 0.01d; v3e.MinNumber = -Math.PI; v3e.MaxNumber = v3e.Factor = Math.PI; v3e.FactorSymbol = "¦Ð"; }
+        );
         AddVector3("T", b => b?.LocalModification.Translation ?? Vector3.Zero, (b, t) => b.LocalModification = b.LocalModification with { Translation = t });
+        AddEmptyRow();
+        AddHeader("Local Modified");
+        AddFloat("S", b => b?.LocalModified.Scale ?? 1);
+        AddVector3("R", b => b?.LocalModified.Rotation.ToEuler() ?? Vector3.Zero, null, v3e => { v3e.Factor = Math.PI; v3e.FactorSymbol = "¦Ð"; });
+        AddVector3("T", b => b?.LocalModified.Translation ?? Vector3.Zero);
     }
 
     private void UpdateControlValues() {

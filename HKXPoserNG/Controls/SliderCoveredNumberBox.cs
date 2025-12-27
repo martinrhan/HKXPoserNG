@@ -16,24 +16,38 @@ using Avalonia.Data;
 using System.Reactive.Linq;
 using Avalonia.Data.Converters;
 using HKXPoserNG.Reactive;
+using Avalonia.Controls.Templates;
+using Avalonia.Controls.Presenters;
 
 namespace HKXPoserNG.Controls;
 
 [DependencyProperty("Number", typeof(double))]
-[DependencyProperty("MinNumber", typeof(double))]
-[DependencyProperty("MaxNumber", typeof(double), DefaultValue = 100)]
+[DependencyProperty("MinNumber", typeof(double), DefaultValue = double.NegativeInfinity)]
+[DependencyProperty("MaxNumber", typeof(double), DefaultValue = double.PositiveInfinity)]
 [DependencyProperty("Sensitivity", typeof(double), DefaultValue = 1)]
-public partial class SliderCoveredNumberBox : Panel {
+[DependencyProperty("ReadOnlyMode", typeof(bool))]
+[DependencyProperty("Factor", typeof(double), DefaultValue = 1)]
+[DependencyProperty("FactorSymbol", typeof(string))]
+public partial class SliderCoveredNumberBox : Grid {
     public SliderCoveredNumberBox() {
+        ColumnDefinitions = [new(GridLength.Star), new(GridLength.Auto)];
         textBox = new() {
             Text = Number.ToString(),
             Padding = new(0),
         };
         textBox.LostFocus += TextBox_LostFocus;
+        Children.Add(textBox);
+        textBlock = new() {
+            Text = FactorSymbol,
+            Margin = new(0,0,1,0),
+            [Grid.ColumnProperty] = 1,
+        };
+        Children.Add(textBlock);
         sliderCover = new() {
             Cursor = new(StandardCursorType.SizeWestEast),
             Background = Brushes.Transparent,
             IsHitTestVisible = true,
+            [Grid.ColumnSpanProperty] = 2,
         };
         IsKeyboardFocusWithinProperty.Changed.AddClassHandler<TextBox>((sender, e) => {
             if (sender != textBox) { return; }
@@ -42,26 +56,30 @@ public partial class SliderCoveredNumberBox : Panel {
         sliderCover.PointerPressed += SliderCover_PointerPressed;
         sliderCover.PointerReleased += SliderCover_PointerReleased;
         sliderCover.PointerMoved += SliderCover_PointerMoved;
-        Children.Add(textBox);
         Children.Add(sliderCover);
     }
 
-    partial void OnNumberChanged(double oldValue, double newValue) {
-        numberChanged.Notify(new (oldValue, newValue));
-    }
-
     TextBox textBox;
+    TextBlock textBlock;
     Panel sliderCover;
 
     private void TextBox_LostFocus(object? sender, RoutedEventArgs e) {
-        double number;
-        if (double.TryParse(textBox.Text, out number)) {
-            Number = number;
+        double coeifficient;
+        if (double.TryParse(textBox.Text, out coeifficient)) {
+            Number = Math.Clamp(coeifficient * Factor, MinNumber, MaxNumber);
         }
     }
-    partial void OnNumberChanged(double newValue) {
-        textBox.Text = newValue.ToString();
+    partial void OnNumberChanged(double oldValue, double newValue) {
+        numberChanged.Notify(new(oldValue, newValue));
+        textBox.Text = (newValue / Factor).ToString("F3");
     }
+    partial void OnFactorChanged(double newValue) {
+        textBox.Text = (Number / newValue).ToString();
+    }
+    partial void OnFactorSymbolChanged(string? newValue) {
+        textBlock.Text = newValue;
+    }
+
 
     private Stopwatch pointerPressedStopwatch = new();
     private bool pointerPressed = false;
@@ -89,5 +107,24 @@ public partial class SliderCoveredNumberBox : Panel {
 
     private SimpleObservable<ValueChangedTuple<double>> numberChanged = new();
     public IObservable<ValueChangedTuple<double>> NumberChanged => numberChanged;
+
+    private FuncControlTemplate<TextBox> readOnlyTemplate = new((c, ns) => {
+        TextPresenter textPresenter = new() {
+            Name = "PART_TextPresenter",
+            [TextPresenter.TextProperty.Bind()] = new Binding() {
+                Path = "Text", RelativeSource = new() { Mode = RelativeSourceMode.TemplatedParent }
+            }
+        };
+        ns.Register("PART_TextPresenter", textPresenter);
+        return textPresenter;
+    });
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) {
+        base.OnAttachedToVisualTree(e);
+        var defaultTemplate = textBox.Template;
+        textBox[TemplatedControl.TemplateProperty.Bind()] = this.
+            GetObservable(ReadOnlyModeProperty).
+            Select(readOnlyMode => readOnlyMode ? readOnlyTemplate : defaultTemplate).
+            ToBinding();
+    }
 }
 
