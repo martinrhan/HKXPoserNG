@@ -46,7 +46,6 @@ public partial class SkeletonView : UserControl {
                         [IsVisibleProperty.Bind()] = observable_selectedBone.Select(
                             selectedBone => {
                                 if (selectedBone != Skeleton.Instance.SelectedBone) throw new Exception();
-                                Debug.WriteLine($"selectedBone: {selectedBone}, bone: {bone}");
                                 return selectedBone == bone;
                             }).
                             ToBinding(),
@@ -73,7 +72,7 @@ public partial class SkeletonView : UserControl {
     }
 
     private void TreeView_SelectionChanged(object? sender, SelectionChangedEventArgs e) {
-        Debug.WriteLine("TreeView_SelectionChanged, Bones: " + string.Join(", ", e.AddedItems.OfType<Bone>().Select(b => b.ToString())));
+        //Debug.WriteLine("TreeView_SelectionChanged, Bones: " + string.Join(", ", e.AddedItems.OfType<Bone>().Select(b => b.ToString())));
         foreach (Bone bone in e.AddedItems.OfType<Bone>()) {
             Stack<Bone> path = new();
             Bone? b = bone;

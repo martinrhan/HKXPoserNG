@@ -1,14 +1,11 @@
 using Avalonia.Collections;
+using HKXPoserNG.Extensions;
+using HKXPoserNG.Reactive;
+using HKXPoserNG.ViewModels.AnimationModificationTrackRestricted;
 using PropertyChanged.SourceGenerator;
 using System;
-using System.Linq;
-using System.Collections.Specialized;
-using System.Collections.Generic;
-using HKXPoserNG.Reactive;
-using System.Reflection.Emit;
-using HKXPoserNG.Extensions;
-using HKXPoserNG.ViewModels.AnimationModificationTrackRestricted;
 using System.ComponentModel;
+using System.Linq;
 
 namespace HKXPoserNG.ViewModels;
 
@@ -50,12 +47,14 @@ public partial class AnimationModificationTrack : IDisposable {
         foreach (var keyFrame in keyFrames) {
             keyFrame.transforms.RemoveAt(i);
         }
+        observable_transformChanged.Notify(new(this, bone, 0, int.MaxValue));
         return true;
     }
-    public void AddKeyFrame(int frame) {
+    public IKeyFrame AddKeyFrame(int frame) {
         int i_insert = Enumerable.Range(0, keyFrames.Count).FirstOrDefault(i => frame < keyFrames[i].Frame, keyFrames.Count);
         KeyFrame keyFrame = new(this) { Frame = frame };
         keyFrames.Insert(i_insert, keyFrame);
+        bool isInsertingIntoInterpolatedInterval = false;
         if (keyFrames.Count > 1) {
             switch (i_insert) {
                 case 0: // first
@@ -76,15 +75,51 @@ public partial class AnimationModificationTrack : IDisposable {
                             return splittedInterval.InterpolationFunction(t0, t1, t);
                         };
                         keyFrame.transforms.Populate(selector);
+                        isInsertingIntoInterpolatedInterval = true;
                     }
                     break;
             }
         }
+        if (isInsertingIntoInterpolatedInterval) {
+            observable_transformChanged.Notify(new(this, null, keyFrames[i_insert - 1].Frame + 1, keyFrames[i_insert + 1].Frame - 1));
+        } else {
+            observable_transformChanged.Notify(new(this, null, frame));
+        }
+        return keyFrame;
     }
-    public void RemoveKeyFrame(int frame) {
+    public void RemoveKeyFrameAtFrame(int frame) {
         int i_remove = Enumerable.Range(0, keyFrames.Count).FirstOrDefault(i => keyFrames[i].Frame == frame, -1);
         if (i_remove == -1) throw new InvalidOperationException();
-        keyFrames.RemoveAt(i_remove);
+        RemoveKeyFrameAtIndex(i_remove);
+    }
+    public void RemoveKeyFrame(IKeyFrame keyFrame) {
+        RemoveKeyFrameAtIndex(KeyFrames.IndexOf(keyFrame));
+    }
+    public void RemoveKeyFrameAtIndex(int i_keyFrame) {
+        IKeyFrame keyFrame = keyFrames[i_keyFrame];
+        int frameStart, frameEnd;
+        switch (i_keyFrame) {
+            case 0:
+                frameStart = keyFrame.Frame;
+                frameEnd = keyFrameIntervals[0].InterpolationFunction == null ? keyFrames[0].Frame : keyFrames[1].Frame - 1;
+                keyFrames.RemoveAt(0);
+                keyFrameIntervals.RemoveAt(0);
+                break;
+            case int x when x == keyFrames.Count - 1:
+                frameStart = keyFrameIntervals[^1].InterpolationFunction == null ? keyFrames[^1].Frame : keyFrames[^2].Frame + 1;
+                frameEnd = keyFrame.Frame;
+                keyFrames.RemoveAt(keyFrames.Count - 1);
+                keyFrameIntervals.RemoveAt(keyFrameIntervals.Count - 1);
+                break;
+            default:
+                (IKeyFrameInterval? interval0, IKeyFrameInterval? interval1) = GetIntervalsBesideKeyFrame(keyFrames[i_keyFrame]);
+                frameStart = interval0?.InterpolationFunction == null ? keyFrame.Frame : keyFrames[i_keyFrame - 1].Frame + 1;
+                frameEnd = interval1?.InterpolationFunction == null ? keyFrame.Frame : keyFrames[i_keyFrame + 1].Frame - 1;
+                keyFrames.RemoveAt(i_keyFrame);
+                keyFrameIntervals.RemoveAt(i_keyFrame);
+                break;
+        }
+        observable_transformChanged.Notify(new(this, null, frameStart, frameEnd));
     }
     public int GetIntervalIndexAtFrame(int frame) {
         if (keyFrames.Count < 2) return -1;
@@ -104,7 +139,34 @@ public partial class AnimationModificationTrack : IDisposable {
         int i_interval = keyFrameIntervals.IndexOf((KeyFrameInterval)interval);
         return (keyFrames[i_interval], keyFrames[i_interval + 1]);
     }
-
+    public (IKeyFrameInterval?, IKeyFrameInterval?) GetIntervalsBesideKeyFrame(IKeyFrame keyFrame) {
+        int i_keyFrame = keyFrames.IndexOf((KeyFrame)keyFrame);
+        IKeyFrameInterval? interval0 = i_keyFrame > 0 ? keyFrameIntervals[i_keyFrame - 1] : null;
+        IKeyFrameInterval? interval1 = i_keyFrame < keyFrames.Count - 1 ? keyFrameIntervals[i_keyFrame] : null;
+        return (interval0, interval1);
+    }
+    public bool IsIntervalAtomic(IKeyFrameInterval interval) {
+        int i_interval = keyFrameIntervals.IndexOf((KeyFrameInterval)interval);
+        return keyFrames[i_interval + 1].Frame - keyFrames[i_interval].Frame == 1;
+    }
+    public Transform GetTransform(int frame, Bone bone) {
+        int i_bone = affectedBones.IndexOf(bone);
+        if (i_bone == -1) return Transform.Identity;
+        KeyFrame? keyFrame = GetKeyFrameAtFrame(frame);
+        if (keyFrame != null) {
+            return GetTransform(keyFrame, i_bone);
+        }
+        int i_interval = GetIntervalIndexAtFrame(frame);
+        if (i_interval == -1) return Transform.Identity;
+        var interval = keyFrameIntervals[i_interval];
+        if (interval.InterpolationFunction != null) {
+            var (kf0, kf1) = GetKeyFramesBesideInterval(interval);
+            float t = (frame - kf0.Frame) / (float)(kf1.Frame - kf0.Frame);
+            return interval.InterpolationFunction(GetTransform(kf0, i_bone), GetTransform(kf1, i_bone), t);
+        } else {
+            return Transform.Identity;
+        }
+    }
     public Transform GetTransform(IKeyFrame keyFrame, Bone bone) {
         int i_bone = affectedBones.IndexOf(bone);
         if (i_bone == -1) return Transform.Identity;
@@ -123,19 +185,47 @@ public partial class AnimationModificationTrack : IDisposable {
     }
     public void SetTransform(IKeyFrame keyFrame, int i_affectedBone, Transform value) {
         ((KeyFrame)keyFrame).transforms[i_affectedBone] = value;
+        (IKeyFrameInterval? interval0, IKeyFrameInterval? interval1) = GetIntervalsBesideKeyFrame(keyFrame);
+        if (interval0?.InterpolationFunction == null && interval1?.InterpolationFunction == null)
+            observable_transformChanged.Notify(new(this, affectedBones[i_affectedBone], keyFrame.Frame));
+        else {
+            int i_keyFrame = keyFrames.IndexOf((KeyFrame)keyFrame);
+            int frameStart = interval0?.InterpolationFunction == null ? keyFrame.Frame : keyFrames[i_keyFrame - 1].Frame + 1;
+            int frameEnd = interval1?.InterpolationFunction == null ? keyFrame.Frame : keyFrames[i_keyFrame + 1].Frame - 1;
+            observable_transformChanged.Notify(new(this, affectedBones[i_affectedBone], frameStart, frameEnd));
+        }
     }
+
+    private SimpleObservable<ModificationTrackTransformChangedEventArgs> observable_transformChanged = new();
+    public IObservable<ModificationTrackTransformChangedEventArgs> TransformChangedObservable => observable_transformChanged;
 
     private IDisposable subscription;
     public void Dispose() {
         subscription.Dispose();
     }
 
-    public void SetCurrentBoneLocalModification(Transform value) {
-        if (AnimationEditor.Instance.SelectedKeyFrame == null) throw new InvalidOperationException();
-        if (Skeleton.Instance.SelectedBone == null) throw new InvalidOperationException();
-        KeyFrame keyFrame = (KeyFrame)AnimationEditor.Instance.SelectedKeyFrame;
-        int i_bone = affectedBones.IndexOf(Skeleton.Instance.SelectedBone);
-        keyFrame.transforms[i_bone] = value;
+}
+
+public class ModificationTrackTransformChangedEventArgs : EventArgs {
+    public AnimationModificationTrack ModificationTrack { get; }
+    public Bone? Bone { get; }
+    public bool IsAllBoneAffected => Bone == null;
+    public bool ContainsBone(Bone bone) => IsAllBoneAffected || Bone == bone;
+    public int FrameStart { get; }
+    public int FrameEnd { get; }
+    public bool IsWholeTrackAffected => FrameStart == 0 && FrameEnd == int.MaxValue;
+    public bool ContainsFrame(int frame) => FrameStart <= frame && frame <= FrameEnd;
+    public ModificationTrackTransformChangedEventArgs(AnimationModificationTrack modificationTrack, Bone? affectedBone, int frame) {
+        ModificationTrack = modificationTrack;
+        Bone = affectedBone;
+        FrameStart = frame;
+        FrameEnd = frame;
+    }
+    public ModificationTrackTransformChangedEventArgs(AnimationModificationTrack modificationTrack, Bone? affectedBone, int frameStart, int frameEnd) {
+        ModificationTrack = modificationTrack;
+        Bone = affectedBone;
+        FrameStart = frameStart;
+        FrameEnd = frameEnd;
     }
 }
 

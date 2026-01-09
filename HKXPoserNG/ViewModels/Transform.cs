@@ -99,4 +99,10 @@ public readonly struct Transform : IEquatable<Transform> {
         Vector3 translation = Vector3.Lerp(a.Translation, b.Translation, t);
         return new(translation, rotation, scale);
     }
+
+    public static bool ApproximatelyEquals(Transform a, Transform b, float epsilon = 1e-6f) {
+        return Vector3.DistanceSquared(a.Translation, b.Translation) < epsilon * epsilon &&
+               Quaternion.Dot(a.Rotation, b.Rotation) > 1.0f - epsilon &&
+               Math.Abs(a.Scale - b.Scale) < epsilon;
+    }
 }

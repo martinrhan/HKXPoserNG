@@ -26,25 +26,16 @@ namespace HKXPoserNG.Controls;
 [DependencyProperty("MaxNumber", typeof(double), DefaultValue = double.PositiveInfinity)]
 [DependencyProperty("Sensitivity", typeof(double), DefaultValue = 1)]
 [DependencyProperty("ReadOnlyMode", typeof(bool))]
-[DependencyProperty("Factor", typeof(double), DefaultValue = 1)]
-[DependencyProperty("FactorSymbol", typeof(string))]
-public partial class SliderCoveredNumberBox : Grid {
+public partial class SliderCoveredNumberBox : Panel {
     public SliderCoveredNumberBox() {
-        ColumnDefinitions = [new(GridLength.Star), new(GridLength.Auto)];
         textBox = new() {
             Text = Number.ToString(),
             Padding = new(0),
         };
         textBox.LostFocus += TextBox_LostFocus;
         Children.Add(textBox);
-        textBlock = new() {
-            Text = FactorSymbol,
-            Margin = new(0,0,1,0),
-            [Grid.ColumnProperty] = 1,
-        };
-        Children.Add(textBlock);
         sliderCover = new() {
-            Cursor = new(StandardCursorType.SizeWestEast),
+            [CursorProperty.Bind()] = this.GetObservable(ReadOnlyModeProperty).Select<bool, Cursor?>(b => b ? null : new(StandardCursorType.SizeWestEast)).ToBinding(),
             Background = Brushes.Transparent,
             IsHitTestVisible = true,
             [Grid.ColumnSpanProperty] = 2,
@@ -60,47 +51,55 @@ public partial class SliderCoveredNumberBox : Grid {
     }
 
     TextBox textBox;
-    TextBlock textBlock;
     Panel sliderCover;
 
-    private void TextBox_LostFocus(object? sender, RoutedEventArgs e) {
-        double coeifficient;
-        if (double.TryParse(textBox.Text, out coeifficient)) {
-            Number = Math.Clamp(coeifficient * Factor, MinNumber, MaxNumber);
+    bool isCallingSetNumberFromTextBox = false;
+    private void SetNumberFromTextBox() {
+        double number_text;
+        if (double.TryParse(textBox.Text, out number_text)) {
+            isCallingSetNumberFromTextBox = true;
+            Number = Math.Clamp(number_text, MinNumber, MaxNumber);
+            isCallingSetNumberFromTextBox = false;
         }
     }
+    private void TextBox_LostFocus(object? sender, RoutedEventArgs e) {
+        SetNumberFromTextBox();
+    }
     partial void OnNumberChanged(double oldValue, double newValue) {
+        if (!isCallingSetNumberFromTextBox)
+            textBox.Text = newValue.ToString("F3");
         numberChanged.Notify(new(oldValue, newValue));
-        textBox.Text = (newValue / Factor).ToString("F3");
-    }
-    partial void OnFactorChanged(double newValue) {
-        textBox.Text = (Number / newValue).ToString();
-    }
-    partial void OnFactorSymbolChanged(string? newValue) {
-        textBlock.Text = newValue;
     }
 
-
-    private Stopwatch pointerPressedStopwatch = new();
     private bool pointerPressed = false;
     private Point lastPointerPosition;
     private void SliderCover_PointerPressed(object? sender, PointerPressedEventArgs e) {
-        pointerPressedStopwatch.Restart();
+        if (ReadOnlyMode) return;
+        this.Focus();
         pointerPressed = true;
         lastPointerPosition = e.GetPosition(sliderCover);
     }
+    bool sliderMoved = false;
     private void SliderCover_PointerReleased(object? sender, PointerReleasedEventArgs e) {
-        if (pointerPressedStopwatch.ElapsedMilliseconds < 500) {
+        if (ReadOnlyMode) return;
+        if (sliderMoved) {
+            SetNumberFromTextBox();
+            sliderMoved = false;
+        } else {
             textBox.Focus();
         }
-        pointerPressedStopwatch.Stop();
         pointerPressed = false;
     }
     private void SliderCover_PointerMoved(object? sender, PointerEventArgs e) {
+        if (ReadOnlyMode) return;
         if (pointerPressed) {
+            double number_text;
+            if (!double.TryParse(textBox.Text, out number_text)) return;
             Point pointerPosotion = e.GetPosition(sliderCover);
             double delta = pointerPosotion.X - lastPointerPosition.X;
-            Number = Math.Clamp(Number + delta * Sensitivity, MinNumber, MaxNumber);
+            number_text = Math.Clamp(number_text + delta * Sensitivity, MinNumber, MaxNumber);
+            textBox.Text = number_text.ToString("F3");
+            sliderMoved = true;
             lastPointerPosition = pointerPosotion;
         }
     }

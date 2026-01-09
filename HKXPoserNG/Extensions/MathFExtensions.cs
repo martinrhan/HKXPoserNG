@@ -12,7 +12,7 @@ public static class MathFExtensions {
 
     public static float Square(this float x) => x * x;
 
-    public static bool AreApproximatelyEqual(float a, float b, float tolerance = 0.0001f) {
+    public static bool AreApproximatelyEqual(float a, float b, float tolerance = 1e-6f) {
         return MathF.Abs(a - b) <= tolerance;
     }
 }

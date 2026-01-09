@@ -15,4 +15,14 @@ public static class ArrayExtensions {
             array[i] = func(i);
         }
     }
+    public static int IndexOf<T>(this IEnumerable<T> enumerable, T value) {
+        int index = 0;
+        foreach (var item in enumerable) {
+            if (EqualityComparer<T>.Default.Equals(item, value)) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
+    }
 }

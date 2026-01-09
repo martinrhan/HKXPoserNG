@@ -23,6 +23,9 @@ public class D3D11View : D3D11Control {
         this.Focusable = true;
         this.IsHitTestVisible = true;
 
+        Dispatcher.UIThread.Post(() => {
+            needRedraw = true;
+        });
         Skeleton.Instance.PropertyChanged += (_, e) => {
             if (e.PropertyName == nameof(Skeleton.SelectedBone)) {
                 needRedraw = true;
@@ -132,7 +135,7 @@ public class D3D11View : D3D11Control {
     private Matrix4x4[] array_boneMatrices = new Matrix4x4[40];
     private uint[] array_shaderFlags = new uint[2];
 
-    bool needRedraw = true;
+    bool needRedraw = false;
     private int frameCount = 0;
     private Task Render() {
 #if DEBUG

@@ -1,7 +1,6 @@
 using NiflySharp.Structs;
 using System;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 
 namespace HKXPoserNG.Extensions;
 
@@ -28,7 +27,7 @@ public static class NumericsExtensions {
         };
     }
 
-    public static bool AreApproximatelyEqual(in Matrix4x4 mat1, in Matrix4x4 mat2, float tolerance = 0.0001f) {
+    public static bool AreApproximatelyEqual(in Matrix4x4 mat1, in Matrix4x4 mat2, float tolerance = 1e-6f) {
         return
             MathF.Abs(mat1.M11 - mat2.M11) < tolerance &&
             MathF.Abs(mat1.M12 - mat2.M12) < tolerance &&
@@ -48,18 +47,18 @@ public static class NumericsExtensions {
             MathF.Abs(mat1.M44 - mat2.M44) < tolerance;
     }
 
-    public static (Vector3 axis, float theta) ToAxisAngle(this Quaternion q) {
-        float theta;
+    public static (Vector3 axis, float angle) ToAxisAngle(this Quaternion q) {
+        q = Quaternion.Normalize(q);
+        float angle;
         Vector3 axis;
-        if(q.W == 1) {
-            theta = 0;
+        if (q.W == 1) {
+            angle = 0;
             axis = Vector3.UnitX;
         } else {
-            theta = 2 * MathF.Acos(q.W);
-            float f = MathF.Sin(theta / 2);
-            f = 1 / f;
-            axis = new(q.X * f, q.Y * f, q.Z * f);
+            angle = 2 * MathF.Acos(q.W);
+            float s = MathF.Sqrt(1.0f - q.W * q.W);
+            axis = new(q.X / s, q.Y / s, q.Z / s);
         }
-        return (axis, theta);
+        return (axis, angle);
     }
 }

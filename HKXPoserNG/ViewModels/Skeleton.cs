@@ -1,4 +1,5 @@
  using Avalonia;
+using Avalonia.Threading;
 using HKX2;
 using HKXPoserNG.Extensions;
 using HKXPoserNG.Mvvm;
@@ -98,6 +99,10 @@ public partial class Skeleton {
         Recursion_SetLineIndices(Root[0]);
         LineIndexBuffer = DXObjects.D3D11Device.CreateBuffer(list_lineIndices.ToArray(), BindFlags.IndexBuffer, ResourceUsage.Immutable);
 
+        Dispatcher.UIThread.Post(() => {
+            UpdateBoneGlobalTransforms();
+            UpdateBoneVertexBuffer();
+        });
         Animation.Instance.PropertyChanged += (s, e) => {
             if (e.PropertyName == nameof(Animation.CurrentFrame)) {
                 UpdateBoneGlobalTransforms();

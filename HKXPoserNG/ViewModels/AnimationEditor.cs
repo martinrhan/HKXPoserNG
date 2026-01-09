@@ -17,8 +17,6 @@ namespace HKXPoserNG.ViewModels;
 [Singleton]
 public partial class AnimationEditor {
     public AnimationEditor() {
-        GetObservable_SelectedKeyFrameIndex().Subscribe(ChangedSelectedKeyFrame);
-        GetObservable_SelectedInterpolationInterval().Subscribe(ChangedSelectedKeyFrameIntervalIndex);
         var observable_hasSelecetedModificationTrack = this.GetPropertyValueObservable(nameof(SelectedModificationTrack), ae => ae.SelectedModificationTrack != null);
         MenuItems = [
             new(Animation.Instance.AnimationChangedObservable.Select(u => true)) {
@@ -74,19 +72,34 @@ public partial class AnimationEditor {
                 HotKey = new KeyGesture(Key.D6)
             }
         ];
+        var observable_selectedModificationTrack = this.GetPropertyValueObservable(nameof(SelectedModificationTrack), ae => ae.SelectedModificationTrack);
+        var observable_keyFramesCollectionChanged =
+            observable_selectedModificationTrack.Select(smt =>
+                smt?.KeyFrames.GetCollectionChangedObservable() ?? Observable.Empty<EventPattern<NotifyCollectionChangedEventArgs>?>()
+            ).Switch();
+        var observable_currentFrame = Animation.Instance.GetPropertyValueObservable(nameof(Animation.CurrentFrame), a => a.CurrentFrame);
+        Observable.CombineLatest(
+            observable_selectedModificationTrack, observable_keyFramesCollectionChanged, observable_currentFrame,
+            (smt, ep, cf) => smt?.KeyFrames.FirstOrDefault(kf => kf.Frame == cf)
+        ).Subscribe(newValue => {
+            SelectedKeyFrame = newValue;
+            PropertyChanged?.Invoke(this, new(nameof(SelectedKeyFrame)));
+        });
+        Observable.CombineLatest(
+            observable_currentFrame,
+            observable_selectedModificationTrack,
+            observable_selectedModificationTrack
+            .Select(smt => smt?.KeyFrameIntervals.GetCollectionChangedObservable() ?? Observable.Empty<EventPattern<NotifyCollectionChangedEventArgs>>())
+            .Switch(),
+            (cf, smt, ep_kf) => {
+                if (smt == null) return null;
+                return smt.GetIntervalAtFrame(cf);
+            }
+        ).Subscribe(newValue => {
+            SelectedKeyFrameInterval = newValue;
+            PropertyChanged?.Invoke(this, new(nameof(SelectedKeyFrameInterval)));
+        });
     }
-    public Transform GetBoneLocalModification(Bone bone) {
-        if (SelectedModificationTrack == null || SelectedKeyFrame == null) return Transform.Identity;
-        return SelectedModificationTrack.GetTransform(SelectedKeyFrame, bone);
-    }
-    public void SetBoneLocalModification(Bone bone, Transform value) {
-        SelectedModificationTrack!.SetTransform(SelectedKeyFrame!, bone, value);
-    }
-    public void SetBoneLocalModificationIfPossible(Bone bone, Transform value) {
-        if (SelectedModificationTrack == null || SelectedKeyFrame == null) return;
-        SelectedModificationTrack.SetTransformIfPossible(SelectedKeyFrame, bone, value); 
-    }
-
     [Notify]
     private string? projectName = "Unamed HKXPoserNG Project";
 
@@ -118,50 +131,29 @@ public partial class AnimationEditor {
         SelectedModificationTrack = modificationTracks.FirstOrDefault();
     });
     private SimpleCommand AddKeyFrameCommand => field ??= new(() => SelectedModificationTrack!.AddKeyFrame(Animation.Instance.CurrentFrame));
-    private SimpleCommand RemoveKeyFrameCommand => field ??= new(() => SelectedModificationTrack!.RemoveKeyFrame(Animation.Instance.CurrentFrame));
+    private SimpleCommand RemoveKeyFrameCommand => field ??= new(() => SelectedModificationTrack!.RemoveKeyFrameAtFrame(Animation.Instance.CurrentFrame));
     private SimpleCommand AddInterpolationCommand => field ??= new(() => SelectedKeyFrameInterval?.InterpolationFunction = KeyFrameIntervalInterpolationFunctions.Linear);
     private SimpleCommand RemoveInterpolationCommand => field ??= new(() => SelectedKeyFrameInterval?.InterpolationFunction = null);
 
-    private IObservable<AnimationModificationTrack?> observable_selectedModificationTrack =>
-        field ??= this.GetPropertyValueObservable(nameof(SelectedModificationTrack), ae => ae.SelectedModificationTrack);
-    private IObservable<EventPattern<NotifyCollectionChangedEventArgs>?> observable_keyFramesCollectionChanged =>
-        field ??= observable_selectedModificationTrack.
-            Select(smt => smt?.KeyFrames.
-                GetCollectionChangedObservable() ??
-                Observable.Empty<EventPattern<NotifyCollectionChangedEventArgs>?>()
-            ).
-            Switch();
-    private IObservable<int> observable_currentFrame => field ??=
-        Animation.Instance.GetPropertyValueObservable(nameof(Animation.CurrentFrame), a => a.CurrentFrame);
-
     public IKeyFrame? SelectedKeyFrame { get; private set; } = null;
-    private IObservable<IKeyFrame?> GetObservable_SelectedKeyFrameIndex() {
-        return Observable.CombineLatest(observable_selectedModificationTrack, observable_keyFramesCollectionChanged, observable_currentFrame,
-            (smt, ep, cf) => smt?.KeyFrames.FirstOrDefault(kf => kf.Frame == cf)
-        );
-    }
-    private void ChangedSelectedKeyFrame(IKeyFrame? newValue) {
-        SelectedKeyFrame = newValue;
-        PropertyChanged?.Invoke(this, new(nameof(SelectedKeyFrame)));
-    }
-
     public IKeyFrameInterval? SelectedKeyFrameInterval { get; private set; } = null;
-    private IObservable<IKeyFrameInterval?> GetObservable_SelectedInterpolationInterval() {
-        return Observable.CombineLatest(
-            observable_currentFrame,
-            observable_selectedModificationTrack,
-            observable_selectedModificationTrack.
-            Select(smt => smt?.KeyFrameIntervals.GetCollectionChangedObservable() ?? Observable.Empty<EventPattern<NotifyCollectionChangedEventArgs>>()).
-            Switch(),
-            (cf, smt, ep_kf) => {
-                if (smt == null) return null;
-                return smt.GetIntervalAtFrame(cf);
-            }
-        );
-    }
-    private void ChangedSelectedKeyFrameIntervalIndex(IKeyFrameInterval? newValue) {
-        SelectedKeyFrameInterval = newValue;
-        PropertyChanged?.Invoke(this, new(nameof(SelectedKeyFrameInterval)));
-    }
 
+    public Transform GetBoneLocalModificationInSelectedTrack(Bone bone) {
+        if (SelectedModificationTrack == null) return Transform.Identity;
+        return SelectedModificationTrack.GetTransform(Animation.Instance.CurrentFrame, bone);
+    }
+    public void SetBoneLocalModificationInSelectedTrack(Bone bone, Transform value) {
+        SelectedModificationTrack!.SetTransform(SelectedKeyFrame!, bone, value);
+    }
+    public void SetBoneLocalModificationInSelectedTrackIfPossible(Bone bone, Transform value) {
+        if (SelectedModificationTrack == null || SelectedKeyFrame == null) return;
+        SelectedModificationTrack.SetTransformIfPossible(SelectedKeyFrame, bone, value);
+    }
+    public Transform GetBoneLocalModificationAggregate(Bone bone) {
+        Transform aggregate = Transform.Identity;
+        foreach (var track in ModificationTracks) {
+            aggregate *= track.GetTransform(Animation.Instance.CurrentFrame, bone);
+        }
+        return aggregate;
+    }
 }
